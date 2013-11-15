@@ -1,0 +1,20 @@
+#!/usr/bin/env perl
+#Copyright (c) 2010 Joachim Bargsten <code at bargsten dot org>. All rights reserved.
+
+use warnings;
+use strict;
+
+use 5.010;
+use Carp;
+
+use Bio::SeqIO;
+use Bio::Root::IO;
+use Bio::Gonzales::Seq::IO qw/faiterate/;
+
+my $io = faiterate(\*STDIN );
+
+my $str;
+while ( my $so = $io->()) {
+    print $so->all_pretty;
+}
+$io->();
