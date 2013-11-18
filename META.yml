@@ -3,9 +3,10 @@ abstract: 'Speedy functions to manipulate biological data'
 author:
   - 'Joachim Bargsten <jwb@cpan.org>'
 build_requires:
+  Module::Build: 0.3601
   Test::More: 0
 configure_requires:
-  ExtUtils::MakeMaker: 6.30
+  Module::Build: 0.3601
 dynamic_config: 0
 generated_by: 'Dist::Zilla version 5.006, CPAN::Meta::Converter version 2.132830'
 license: perl
@@ -15,6 +16,12 @@ meta-spec:
 name: Bio-Gonzales
 recommends:
   Bio::Root::Version: 0
+  Excel::Writer::XLSX: 0
+  Net::DNS: 0
+  Net::Domain: 0
+  SVG: 0
+  Term::ReadKey: 0
+requires:
   Capture::Tiny: 0
   Config::General: 0
   Cwd: 0
@@ -23,7 +30,6 @@ recommends:
   DateTime: 0
   Digest::MD5: 0
   Digest::SHA1: 0
-  Excel::Writer::XLSX: 0
   File::Copy: 0
   File::Find: 0
   File::Path: 0
@@ -42,20 +48,16 @@ recommends:
   Moo: 0
   Mouse: 0
   MouseX::Foreign: 0
-  Net::DNS: 0
-  Net::Domain: 0
   Number::Format: 0
   Params::Util: 0
   Path::Class: 0
-  SVG: 0
   Scalar::Util::Numeric: 0
   Set::IntervalTree: 0
   Storable: 0
   String::ShellQuote: 0
-  Term::ReadKey: 0
   Try::Tiny: 0
   URI: 0
   YAML::XS: 0
   constant: 0
   perl: 5.010
-version: 0.04
+version: 0.05

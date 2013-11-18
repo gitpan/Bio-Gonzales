@@ -22,11 +22,11 @@ BEGIN { use_ok('Bio::Gonzales::Domain::Group'); }
 
 {
   my $q = Bio::Gonzales::Search::IO::HMMER3->new( file => "t/data/HMMSearch_Speruvianum.result" )->parse;
-  is_deeply( Bio::Gonzales::Domain::Group->domain_list($q),
-    [ 'SM00490_HELICc', 'SM00487_DEXDc', 'SNF2_N#PF00176.16', 'Helicase_C#PF00271.24' ] );
+  is_deeply( [ sort @{Bio::Gonzales::Domain::Group->domain_list($q)}],
+    [ 'Helicase_C#PF00271.24', 'SM00487_DEXDc', 'SM00490_HELICc',  'SNF2_N#PF00176.16',  ] );
 
   my $l = Bio::Gonzales::Domain::Group->new( search_result => $q, required_domains => [ [qr/Helic/i] ] );
-  is_deeply( $l->required_domains, [ [ 'SM00490_HELICc', 'Helicase_C#PF00271.24' ] ] );
+  is_deeply( [ sort @{$l->required_domains->[0]}], [  'Helicase_C#PF00271.24', 'SM00490_HELICc'  ] );
 
 }
 
