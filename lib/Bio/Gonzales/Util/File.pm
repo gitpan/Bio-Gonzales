@@ -136,7 +136,7 @@ sub open_on_demand {
   if (wantarray) {
     return ( $fh, $fh_was_open );
   } elsif ($fh_was_open) {
-    confess "it is not possible to use open_on_demand\n in scalar context with previously opened filehandle";
+    carp "it is not advisable to use open_on_demand\n in scalar context with previously opened filehandle";
   }
   return $fh;
 }

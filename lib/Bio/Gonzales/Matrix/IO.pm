@@ -28,22 +28,59 @@ sub dict_slurp {
   carp "you have not specified key_idx and val_idx, using 0 and 1"
     unless ( $cc && exists( $cc->{key_idx} ) && exists( $cc->{val_idx} ) );
 
-  my $kidx = $cc->{key_idx} // 0;
-  my $vidx = $cc->{val_idx} // 1;
+  $cc //= {};
+  my %c = (
+    sep     => qr/\t/,
+    header  => 0,
+    skip    => -1,
+    comment => qr/^#/,
+    key_idx => 0,
+    val_idx => 1,
+    %$cc
+  );
+
+  my $kidx = $cc->{key_idx};
+  my $vidx = $cc->{val_idx};
   # make an array from it
-  $vidx = [$vidx]
-    unless ( ref $vidx );
 
-  my @data = mslurp( $src, $cc );
+  my $uniq = $cc->{uniq} // $cc->{uniq_vals} // 0;
 
-  my $matrix = shift @data;
-  my %map;
+  my ( $fh, $fh_was_open ) = open_on_demand( $src, '<' );
 
-  for my $l (@$matrix) {
-    $map{ $l->[$kidx] } //= [];
-    push @{ $map{ $l->[$kidx] } }, [ @{$l}[@$vidx] ];
+  my @header;
+  if ( $c{header} ) {
+    while ( my $raw_row = <$fh> ) {
+      next if ( $c{comment} && $raw_row =~ /$c{comment}/ );
+
+      $raw_row =~ s/\r\n/\n/;
+      chomp $raw_row;
+      $raw_row =~ s/$c{pre}// if ( $c{pre} );
+      @header = split /$c{sep}/, $raw_row;
+      last;
+    }
   }
-  return wantarray ? ( \%map, @data ) : \%map;
+
+  my %map;
+  my $lnum = 0;
+  while (<$fh>) {
+    next if ( $lnum++ <= $c{skip} );
+    next if ( $c{comment} && /$c{comment}/ );
+    s/\r\n/\n/;
+    chomp;
+    next if (/^\s*$/);
+
+    my @r = split /$c{sep}/;
+
+    if ($uniq) {
+      $map{ $r[$kidx] } = ( ref $vidx ? [ @r[@$vidx] ] : $r[$vidx] );
+    } else {
+      $map{ $r[$kidx] } //= [];
+      push @{ $map{ $r[$kidx] } }, ( ref $vidx ? [ @r[@$vidx] ] : $r[$vidx] );
+    }
+  }
+
+  close $fh unless ($fh_was_open);
+  return wantarray ? ( \%map, \@header ) : \%map;
 }
 
 sub dict_spew {
@@ -74,7 +111,7 @@ sub mslurp {
   my %c = (
     sep       => qr/\t/,
     header    => 0,
-    skip      => 0,
+    skip      => -1,
     row_names => 0,
     comment   => qr/^#/,
     %$cc
@@ -95,8 +132,9 @@ sub mslurp {
     }
   }
 
+  my $lnum = 0;
   while (<$fh>) {
-    next if ( $. <= $c{skip} );
+    next if ( $lnum++ <= $c{skip} );
     next if ( $c{comment} && /$c{comment}/ );
     s/\r\n/\n/;
     chomp;
@@ -112,7 +150,11 @@ sub mslurp {
   #remove first empty element of a header if same number of elements as first matrix element.
   shift @header if ( $c{header} && @m > 0 && @{ $m[0] } == @header && !$header[0] );
 
-  return wantarray ? ( \@m, \@header, \@row_names ) : \@m;
+  if (wantarray) {
+    return ( \@m, ( @header ? \@header : undef ), ( @row_names ? \@row_names : undef ) );
+  } else {
+    return \@m;
+  }
 }
 
 sub miterate {
