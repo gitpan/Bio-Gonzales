@@ -28,7 +28,7 @@ sub gffiterate {
     my $feat = $gff->next_feat;
 
     unless ( defined($feat) ) {
-      close $fh unless ($fh_was_open);
+      $fh->close unless ($fh_was_open);
       return;
     }
     return $feat;

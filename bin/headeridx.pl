@@ -26,7 +26,7 @@ while ( $first_line = <$fh> ) {
   last if ( $first_line !~ /\s*$opt{comment}/ );
 }
 
-close $fh;
+$fh->close;
 
 chomp $header;
 chomp $first_line;

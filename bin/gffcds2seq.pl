@@ -73,7 +73,7 @@ for my $feat_set ( values %cds_feats ) {
 
   faspew( $out_fh, $seq );
 }
-close $out_fh;
+$out_fh->close;
 __END__
 
 =head1 NAME

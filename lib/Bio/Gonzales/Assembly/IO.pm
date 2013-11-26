@@ -113,7 +113,7 @@ sub agp2fasta {
                 default { die "unknown component type" . Dumper $o }
             }
         }
-        close $out_fh;
+        $out_fh->close;
     }
 
 }

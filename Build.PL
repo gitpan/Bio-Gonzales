@@ -17,7 +17,7 @@ my %module_build_args = (
     "Joachim Bargsten <jwb\@cpan.org>"
   ],
   "dist_name" => "Bio-Gonzales",
-  "dist_version" => "0.051",
+  "dist_version" => "0.053",
   "license" => "perl",
   "module_name" => "Bio::Gonzales",
   "recommends" => {

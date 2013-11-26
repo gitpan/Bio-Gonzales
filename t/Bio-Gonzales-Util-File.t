@@ -19,53 +19,58 @@ my $tmpdir = tempdir( CLEANUP => 1 );
   is_deeply( $linesa, $linesb );
 }
 
-{
+SKIP: {
+  my $gzip_bin = which('gzip');
+  skip "no gzip executable found", 1 unless $gzip_bin;
+
   my $tempfn = catfile($tmpdir, '1.gz');
 
-  my $gzip = which('gzip');
-  diag $gzip;
-  my $ofh = Bio::Gonzales::Util::File::_pipe_z($gzip, $tempfn, '>' );
+  diag $gzip_bin;
+  my $ofh = Bio::Gonzales::Util::File::_pipe_z($gzip_bin, $tempfn, '>' );
 
 
   open my $ifh, '<', 't/data/mini.fasta' or die "Can't open filehandle: $!"; # check
   my @lines = <$ifh>;
-  close $ifh;
+  $ifh->close;
 
   for my $l (@lines) {
     print $ofh $l;
   }
-  close $ofh;
+  $ofh->close;
 
   my $linesa = slurpc("t/data/mini.fasta");
-  open my $fh, '-|', 'gunzip', '-c', $tempfn or die "Can't open filehandle: $!"; #check
+  open my $fh, '-|', $gzip_bin, '-dc', $tempfn or die "Can't open filehandle: $!"; #check
   my @linesb = map { chomp; $_ } <$fh>;
-  close $fh;
+  $fh->close;
   is_deeply(\@linesb, $linesa );
-  unlink $tempfn;
 }
 
-{
+SKIP: {
+  my $gzip_bin = which('gzip');
+  skip "no gzip executable found", 2 unless $gzip_bin;
+
   my $tempfn = catfile($tmpdir, '2.gz');
 
-  $Bio::Gonzales::Util::File::EXTERNAL_GZ = which('gzip');
+
+  $Bio::Gonzales::Util::File::EXTERNAL_GZ = $gzip_bin;
+
   my $ofh = Bio::Gonzales::Util::File::open_on_demand($tempfn, '>' );
   isnt(ref $ofh, 'IO::Zlib');
 
   open my $ifh, '<', 't/data/mini.fasta' or die "Can't open filehandle: $!"; # check
   my @lines = <$ifh>;
-  close $ifh;
+  $ifh->close;
 
   for my $l (@lines) {
     print $ofh $l;
   }
-  close $ofh;
+  $ofh->close;
 
   my $linesa = slurpc("t/data/mini.fasta");
-  open my $fh, '-|', 'gunzip', '-c', $tempfn or die "Can't open filehandle: $!"; #check
+  open my $fh, '-|', $gzip_bin, '-cd', $tempfn or die "Can't open filehandle: $!"; #check
   my @linesb = map { chomp; $_ } <$fh>;
   is_deeply( $linesa, \@linesb );
-  close $fh;
-  unlink $tempfn;
+  $fh->close;
 }
 
 {
@@ -77,17 +82,17 @@ my $tmpdir = tempdir( CLEANUP => 1 );
 
   open my $ifh, '<', 't/data/mini.fasta' or die "Can't open filehandle: $!"; #check
   my @lines = <$ifh>;
-  close $ifh;
+  $ifh->close;
 
   for my $l (@lines) {
     print $ofh $l;
   }
-  close $ofh;
+  $ofh->close;
 
   my $linesa = slurpc("t/data/mini.fasta");
   open my $fh, '-|', 'gunzip', '-c', $tempfn or die "Can't open filehandle: $!"; #check
   my @linesb = map { chomp; $_ } <$fh>;
-  close $fh;
+  $fh->close;
   is_deeply( $linesa, \@linesb );
   unlink $tempfn;
 }
@@ -100,16 +105,16 @@ my $tmpdir = tempdir( CLEANUP => 1 );
 
   open my $ifh, '<', 't/data/mini.fasta' or die "Can't open filehandle: $!"; #check
   my @lines = map { chomp; $_ } <$ifh>;
-  close $ifh;
+  $ifh->close;
 
   jspew($ofh, \@lines);
 
-  close $ofh;
+  $ofh->close;
 
   my $linesa = slurpc("t/data/mini.fasta");
   open my $fh, '-|', 'gunzip', '-c', $tempfn or die "Can't open filehandle: $!"; #check
   my $linesb = do { local $/; <$fh> };
-  close $fh;
+  $fh->close;
   $linesb = jthaw($linesb);
   is_deeply( $linesb,$linesa );
   unlink $tempfn;
@@ -122,7 +127,7 @@ sub slurpc_old {
     chomp;
     push @lines, $_;
   }
-  close $fh;
+  $fh->close;
 
   return wantarray ? @lines : \@lines;
 }

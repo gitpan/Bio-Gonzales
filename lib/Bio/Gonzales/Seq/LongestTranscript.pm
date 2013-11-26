@@ -181,7 +181,7 @@ sub freeze_seqs {
     }
 
     #close filehandle
-    close $faout_fh;
+    $faout_fh->close;
 }
 
 1;

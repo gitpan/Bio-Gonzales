@@ -43,7 +43,7 @@ sub makeblastdb {
     while ( my $s = $fait->() ) {
       faspew( $fh, $s );
     }
-    close $fh;
+    $fh->close;
     $unlink = 1;
     $seqf   = $fn;
     say STDERR "extraction finished. making blast DB";

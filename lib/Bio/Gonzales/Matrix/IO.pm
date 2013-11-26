@@ -25,7 +25,7 @@ our $VERSION = 0.01_01;
 
 sub dict_slurp {
   my ( $src, $cc ) = @_;
-  carp "you have not specified key_idx and val_idx, using 0 and 1"
+  croak "you have not specified key_idx and val_idx"
     unless ( $cc && exists( $cc->{key_idx} ) && exists( $cc->{val_idx} ) );
 
   $cc //= {};
@@ -35,15 +35,14 @@ sub dict_slurp {
     skip    => -1,
     comment => qr/^#/,
     key_idx => 0,
-    val_idx => 1,
     %$cc
   );
 
-  my $kidx = $cc->{key_idx};
-  my $vidx = $cc->{val_idx};
+  my $kidx = $c{key_idx};
+  my $vidx = $c{val_idx};
   # make an array from it
 
-  my $uniq = $cc->{uniq} // $cc->{uniq_vals} // 0;
+  my $uniq = $c{uniq} // $c{uniq_vals} // $c{unique} // 0;
 
   my ( $fh, $fh_was_open ) = open_on_demand( $src, '<' );
 
@@ -71,7 +70,11 @@ sub dict_slurp {
 
     my @r = split /$c{sep}/;
 
-    if ($uniq) {
+    if ( $uniq && !defined($vidx) ) {
+      $map{ $r[$kidx] } = 1;
+    } elsif ( not defined $vidx ) {
+      $map{ $r[$kidx] }++;
+    } elsif ($uniq) {
       $map{ $r[$kidx] } = ( ref $vidx ? [ @r[@$vidx] ] : $r[$vidx] );
     } else {
       $map{ $r[$kidx] } //= [];
@@ -79,7 +82,7 @@ sub dict_slurp {
     }
   }
 
-  close $fh unless ($fh_was_open);
+  $fh->close unless ($fh_was_open);
   return wantarray ? ( \%map, \@header ) : \%map;
 }
 
@@ -145,7 +148,7 @@ sub mslurp {
 
     push @m, \@row;
   }
-  close $fh unless ($fh_was_open);
+  $fh->close unless ($fh_was_open);
 
   #remove first empty element of a header if same number of elements as first matrix element.
   shift @header if ( $c{header} && @m > 0 && @{ $m[0] } == @header && !$header[0] );
@@ -183,7 +186,7 @@ sub miterate {
       return \@row;
 
     }
-    close $fh unless ($fh_was_open);
+    $fh->close unless ($fh_was_open);
     return;
   };
 }
@@ -213,7 +216,7 @@ sub lspew {
   } else {
     confess "need a reference for the list argument";
   }
-  close $fh unless ($fh_was_open);
+  $fh->close unless ($fh_was_open);
 
   return;
 }
@@ -307,7 +310,7 @@ sub mspew {
     #print row
     say $fh join $sep, @{ _quote( \@r, $quote_is_on, $na_value ) };
   }
-  close $fh unless ($fh_was_open);
+  $fh->close unless ($fh_was_open);
   return;
 }
 
@@ -365,7 +368,7 @@ sub xlsx_spew {
   my $worksheet = $workbook->add_worksheet();
   $worksheet->write_col( 'A1', \@table );
   $workbook->close;
-  close $fh unless ($fh_was_open);
+  $fh->close unless ($fh_was_open);
   return;
 }
 

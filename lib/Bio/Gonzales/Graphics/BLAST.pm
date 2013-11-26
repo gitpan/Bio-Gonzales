@@ -105,7 +105,7 @@ sub render {
         $panel_imgs{ $result->query_name } = $img_result;
         $panel->finished;
     }
-    close $fh unless ($fh_was_open);
+    $fh->close unless ($fh_was_open);
 
     return \%panel_imgs;
 }
@@ -239,7 +239,7 @@ sub render_sep {
         $panel->finished;
     }
 
-    close $fh unless ($fh_was_open);
+    $fh->close unless ($fh_was_open);
 
     return \%panel_imgs;
 }

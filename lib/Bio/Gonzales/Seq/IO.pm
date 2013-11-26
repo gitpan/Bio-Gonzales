@@ -35,8 +35,7 @@ sub faslurp {
     push @fa, $entry;
   }
 
-  close $fh
-    unless ($fh_was_open);
+  $fh->close unless ($fh_was_open);
 
   return wantarray ? @fa : \@fa;
 }
@@ -84,8 +83,7 @@ sub fasubseq {
       push @fa, $entry unless (@$ranges);
     }
   }
-  close $fh
-    unless ($fh_was_open);
+  $fh->close unless ($fh_was_open);
 
   return wantarray ? @fa : \@fa;
 }
@@ -110,7 +108,7 @@ sub faiterate {
   return sub {
     my $entry = $fasta->next_seq;
     unless ( defined($entry) ) {
-      close $fh unless ($fh_was_open);
+      $fh->close unless ($fh_was_open);
 
       if ( my $src = shift @srcs ) {
         ( $fh, $fh_was_open ) = open_on_demand( $src, '<' );
@@ -150,7 +148,7 @@ sub faspew {
       confess "error";
     }
   }
-  close $fh
+  $fh->close
     unless ($fh_was_open);
   return;
 }

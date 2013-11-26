@@ -37,7 +37,7 @@ sub phylip_spew {
     }
   }
 
-  close $fh unless ($fh_was_open);
+  $fh->close unless ($fh_was_open);
 }
 
 sub _seq_phylip_spew {
@@ -70,7 +70,7 @@ sub phylip_slurp {
   elsif ( $mode =~ /^i(?:nter(?:leaved)?)?$/ ) { $seqs = _int_phylip_slurp( $fh, $relaxed ) }
   else                                         { croak "you have to supply a mode" }
 
-  close $fh unless ($fh_was_open);
+  $fh->close unless ($fh_was_open);
   return $seqs;
 }
 

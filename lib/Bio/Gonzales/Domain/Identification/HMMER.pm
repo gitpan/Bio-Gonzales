@@ -153,7 +153,7 @@ sub _transform_hmm_hits {
             num_marks => scalar @{ $self->domain_groups } );
         $self->_update_sequence_mark( $result_for_sequence{ $k->{seq_id} }, $k );
     }
-    close $cache;
+    $cache->close;
 
     return \%result_for_sequence;
 }
@@ -339,8 +339,8 @@ sub identify {
 
         }
     }
-    close $seq_ids_fh;
-    close $not_found;
+    $seq_ids_fh->close;
+    $not_found->close;
 }
 
 # for every group in array, grep for accession

@@ -50,7 +50,7 @@ if ( $pid == 0 ) {
     Time::HiRes::usleep($poll_intervall);
     $time_point++;
   }
-  close $mem_log_fh;
+  $mem_log_fh->close;
 
   my ( $user, $system, $child_user, $child_system ) = times;
   my $t = Time::HiRes::tv_interval($start_time);
@@ -63,7 +63,7 @@ if ( $pid == 0 ) {
     "user time for all children was $child_user\n",
     "system time for all children was $child_system\n";
 
-  close $time_log_fh;
+   $time_log_fh->close;
 }
 
 sub parse_ps {

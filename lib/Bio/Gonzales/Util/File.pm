@@ -11,6 +11,7 @@ use IO::Handle;
 use IO::Zlib;
 use IO::Uncompress::Bunzip2 qw($Bunzip2Error);
 use File::Which qw/which/;
+use Bio::Gonzales::Util::IO::Compressed;
 
 our %ZMODES = (
   '>'  => 'wb',
@@ -72,7 +73,7 @@ sub slurpc {
 
   my ( $fh, $was_open ) = open_on_demand( $_[0], '<' );
   my @lines = map { s/\r\n/\n/; chomp; $_ } <$fh>;
-  close $fh if ( !$was_open );
+  $fh->close if ( !$was_open );
 
   return wantarray ? @lines : \@lines;
 }
@@ -149,16 +150,17 @@ sub _pipe_z {
     return $fh;
   } elsif ( $mode eq '>' ) {
     my ( $r, $w );
-    pipe( $r, $w ) || die "pigz pipe failed: $!";
+    pipe( $r, $w ) || die "gz pipe failed: $!";
     my $pid = fork();
-    $SIG{PIPE} = sub { die "whoops, pigz pipe broke" };
-    defined($pid) || die "pigz fork failed: $!";
+    $SIG{PIPE} = sub { die "whoops, gz pipe broke" };
+    defined($pid) || die "gz fork failed: $!";
     if ($pid) {
-      close $r;
-      return $w;
+      $r->close;
+      #return $w;
+      return Bio::Gonzales::Util::IO::Compressed->new($w, $pid);
     } else {
-      open( STDIN, "<&", $r ) || die "can't reopen pigz STDIN: $!";
-      close($w) || die "can't close pigz WRITER: $!";
+      open( STDIN, "<&", $r ) || die "can't reopen gz STDIN: $!";
+      $w->close || die "can't close gz WRITER: $!";
       open STDOUT, '>', $f or die "Can't open filehandle: $!";
       exec( $gz, '-c' );
       exit(0);

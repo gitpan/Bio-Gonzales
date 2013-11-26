@@ -68,7 +68,7 @@ sub consensus {
     #Bio::Phylo::Forest::Tree
     open my $outfh, '>', $outfile or die $!;
     print $outfh $consensus->to_newick( -nodelabels => 1 );
-    close $outfh;
+    $outfh->close;
 
 }
 

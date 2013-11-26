@@ -60,9 +60,9 @@ BEGIN { use_ok('Bio::Gonzales::Domain::Group'); }
   is( scalar @{ $l->filter_ids }, 37 );
 
   ( undef, my $gff_f ) = tempfile();
-  $gff_f = "/tmp/test.gff3";
+  #$gff_f = "/tmp/test.gff3";
   $l->to_gff($gff_f);
-  jspew("/tmp/test.json", $l->filter_hits);
+  #jspew("/tmp/test.json", $l->filter_hits);
 
   my @ref_lines = slurpc("t/data/HMMSearch_Speruvianum.gff");
   my @out_lines = slurpc($gff_f);

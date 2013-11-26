@@ -36,7 +36,7 @@ sub _spew {
     local $/ = "\n";
 
     print $fh $data;
-    close $fh unless $was_open;
+    $fh->close unless $was_open;
 }
 
 sub _slurp {
@@ -47,7 +47,7 @@ sub _slurp {
 
     my $data = do { local $/; <$fh> };
 
-    close $fh unless $was_open;
+    $fh->close unless $was_open;
     return $data;
 }
 

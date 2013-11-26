@@ -41,7 +41,7 @@ while ( my $ao = next_aln($aln_fh) ) {
   $aln_out->write_aln( parse_alignment( $1, $2, $ao ) );
 }
 
-close $aln_fh;
+$aln_fh->close;
 
 sub next_aln {
   my ($aln_fh) = @_;

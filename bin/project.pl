@@ -64,14 +64,14 @@ given ($cmd) {
     say STDERR "Creating Makefile";
     open my $make_fh, '>', "Makefile" or confess "Can't open filehandle: $!";
     say $make_fh ".PHONY: all clean test\n";
-    close $make_fh;
+    $make_fh->close;
 
     create_readme( '.', $name, $date );
     say STDERR "creating git repo";
 
     open my $gi_fh, '>', '.gitignore' or confess "Can't open filehandle: $!";
     say $gi_fh "analysis";
-    close $gi_fh;
+    $gi_fh->close;
 
     system qw/git init/;
     system qw/git add Makefile README .gitignore/;
@@ -121,11 +121,11 @@ given ($cmd) {
     say $make_fh "dir:";
     say $make_fh "\t" . '@[ -d $(AV) ] || mkdir $(AV)';
 
-    close $make_fh;
+    $make_fh->close;
 
     open my $av_fh, '>', 'av' or confess "Can't open filehandle: $!";
     say $av_fh $date;
-    close $av_fh;
+    $av_fh->close;
 
     say STDERR "Creating IO files dictionary";
     touch("gonzconf.yml");
@@ -145,7 +145,7 @@ given ($cmd) {
       say $main_mkf_fh "# created on $date";
       say $main_mkf_fh "$name:";
       say $main_mkf_fh "\tcd $rel_dir && \$(MAKE)";
-      close $main_mkf_fh;
+      $main_mkf_fh->close;
     } else {
       say STDERR 'NOT updating project makefile';
     }
@@ -198,7 +198,7 @@ sub create_readme {
   say $readme_fh "Joachim Bargsten <jw\@bargsten.org> ($date)";
   say $readme_fh "$name erstellt am $date.";
   say $readme_fh "\n";
-  close $readme_fh;
+  $readme_fh->close;
 }
 
 sub find_project_root {

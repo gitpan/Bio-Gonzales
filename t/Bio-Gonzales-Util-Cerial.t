@@ -26,7 +26,7 @@ jspew( $filename, \%data );
 
 open my $fhx, '<', $filename or die "Can't open filehandle: $!";
 my $check_json_data = do { local $/; <$fhx> };
-close $fhx;
+$fhx->close;
 
 {
   my $check_data = decode_json($check_json_data);

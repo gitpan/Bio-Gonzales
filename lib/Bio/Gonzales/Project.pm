@@ -35,7 +35,7 @@ if ( $ENV{ANALYSIS_VERSION} ) {
 }
 
 unless ( $ANALYSIS_VERSION && $ANALYSIS_VERSION =~ /^[-A-Za-z_.0-9]+$/ ) {
-  carp "analysis version not or not correctly specified";
+  carp "analysis version not or not correctly specified, variable contains: " . ($ANALYSIS_VERSION // 'nothing');
   carp "using current dir as output dir";
   $ANALYSIS_VERSION = '.';
 } else {
