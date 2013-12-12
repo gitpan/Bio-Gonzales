@@ -10,8 +10,8 @@ use Pod::Usage;
 use String::ShellQuote;
 use Getopt::Long qw(:config auto_help);
 
-my %opt = ( quote => 1 );
-GetOptions( \%opt, 'flat|f', 'quote|q!', 'json|j' ) or pod2usage(2);
+my %opt = ( quote => 1, sep=> ' ' );
+GetOptions( \%opt, 'sep|s=s', 'flat|f', 'quote|q!', 'json|j' ) or pod2usage(2);
 
 gonzlog->tee_stderr(0);
 gonzlog->namespace("gonzconf");
@@ -28,7 +28,7 @@ if ( $opt{json} ) {
   if ( $opt{quote} ) {
     $args = shell_quote(@$res);
   } else {
-    $args = join " ", @$res;
+    $args = join $opt{sep}, @$res;
   }
   print $args;
 } elsif ( ref $res ) {

@@ -313,7 +313,7 @@ __END__
 
 =head1 NAME
 
-Bio::Gonzales::Seq - Gonzales Seqeuence Object
+Bio::Gonzales::Seq - Gonzales Sequence Object
 
 =head1 SYNOPSIS
 

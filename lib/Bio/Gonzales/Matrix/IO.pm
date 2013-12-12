@@ -19,9 +19,9 @@ use base 'Exporter';
 our ( @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
 our $VERSION = 0.01_01;
 
-@EXPORT      = qw(mslurp mspew lslurp miterate hslurp lspew dict_slurp dict_spew);
+@EXPORT      = qw(mslurp mspew lslurp miterate lspew dict_slurp dict_spew);
 %EXPORT_TAGS = ();
-@EXPORT_OK   = qw(lspew xlsx_slurp xlsx_spew hspew);
+@EXPORT_OK   = qw(lspew xlsx_slurp xlsx_spew);
 
 sub dict_slurp {
   my ( $src, $cc ) = @_;
@@ -35,8 +35,10 @@ sub dict_slurp {
     skip    => -1,
     comment => qr/^#/,
     key_idx => 0,
+    record_filter => undef,
     %$cc
   );
+  my $record_filter = $c{record_filter};
 
   my $kidx = $c{key_idx};
   my $vidx = $c{val_idx};
@@ -53,7 +55,6 @@ sub dict_slurp {
 
       $raw_row =~ s/\r\n/\n/;
       chomp $raw_row;
-      $raw_row =~ s/$c{pre}// if ( $c{pre} );
       @header = split /$c{sep}/, $raw_row;
       last;
     }
@@ -70,15 +71,18 @@ sub dict_slurp {
 
     my @r = split /$c{sep}/;
 
+    next if($record_filter && !$record_filter->(\@r) );
+
+    my $k = ( ref $kidx ? join($;, map { $_ // '' } @r[@$kidx]) : $r[$kidx] ) // '';
     if ( $uniq && !defined($vidx) ) {
-      $map{ $r[$kidx] } = 1;
+      $map{$k} = 1;
     } elsif ( not defined $vidx ) {
-      $map{ $r[$kidx] }++;
+      $map{$k}++;
     } elsif ($uniq) {
-      $map{ $r[$kidx] } = ( ref $vidx ? [ @r[@$vidx] ] : $r[$vidx] );
+      $map{$k} = ( ref $vidx ? [ @r[@$vidx] ] : $r[$vidx] );
     } else {
-      $map{ $r[$kidx] } //= [];
-      push @{ $map{ $r[$kidx] } }, ( ref $vidx ? [ @r[@$vidx] ] : $r[$vidx] );
+      $map{$k} //= [];
+      push @{ $map{$k} }, ( ref $vidx ? [ @r[@$vidx] ] : $r[$vidx] );
     }
   }
 
@@ -117,8 +121,11 @@ sub mslurp {
     skip      => -1,
     row_names => 0,
     comment   => qr/^#/,
+    record_filter => undef,
     %$cc
   );
+
+  my $record_filter = $c{record_filter};
 
   my @header;
   my @row_names;
@@ -129,7 +136,6 @@ sub mslurp {
 
       $raw_row =~ s/\r\n/\n/;
       chomp $raw_row;
-      $raw_row =~ s/$c{pre}// if ( $c{pre} );
       @header = split /$c{sep}/, $raw_row;
       last;
     }
@@ -144,6 +150,9 @@ sub mslurp {
     next if (/^\s*$/);
 
     my @row = split /$c{sep}/;
+
+    next if($record_filter && !$record_filter->(\@row) );
+
     push @row_names, shift @row if ( $c{row_names} );
 
     push @m, \@row;
@@ -169,8 +178,11 @@ sub miterate {
     sep     => qr/\t/,
     skip    => 0,
     comment => qr/^#/,
+    record_filter => undef,
     %$cc
   );
+
+  my $record_filter = $c{record_filter};
 
   return sub {
     while (<$fh>) {
@@ -180,9 +192,9 @@ sub miterate {
       next if ( $c{comment} && /$c{comment}/ );
       s/\r\n/\n/;
       chomp;
-      s/$c{pre}// if ( $c{pre} );
       next if (/^\s*$/);
       my @row = split /$c{sep}/;
+      next if($record_filter && !$record_filter->(\@row) );
       return \@row;
 
     }
@@ -226,29 +238,6 @@ sub lslurp {
 
   my @lines = slurpc($file);
   return \@lines;
-}
-
-sub hspew { return lspew(@_) }
-
-sub hslurp {
-  my ( $file, $c ) = @_;
-
-  my $idx_col          = $c->{idx_col}    // 0;
-  my $allow_duplicates = $c->{duplicates} // 0;
-
-  my $lines = mslurp( $file, $c );
-  my %data;
-  for my $l (@$lines) {
-    my $key = splice @$l, $idx_col, 1;
-    if ($allow_duplicates) {
-      $data{$key} //= [];
-      push @{ $data{$key} }, $l;
-    } else {
-      confess if ( exists( $data{$key} ) );
-      $data{$key} = $l;
-    }
-  }
-  return \%data;
 }
 
 sub mspew {
@@ -418,6 +407,32 @@ Provides functions for common matrix/list IO.
 
 =over 4
 
+=item B<< dict_slurp($filename, \%options) >>
+
+  %options = (
+    sep     => qr/\t/,
+    header  => 0,
+    skip    => -1,
+    comment => qr/^#/,
+    key_idx => 0,
+    val_idx => undef,
+    uniq    => 0,
+  );
+
+Setups:
+
+=over 4
+
+=item uniq = 1 && no val_idx => read in key_idx as hash and set values to 1
+
+=item uniq = 0 && no val_idx => read in key_idx as hash and set values to the count of keys
+
+=item uniq = 1 && val_idx    =>  read into ( key => [ @values ], ...)
+
+=item uniq = 0 && val_idx    =>  read into ( key => [ [ @values ], [ @more_values ] ], ...)
+
+=back
+
 =item B<< mspew($filename, \@matrix, \%options) >>
 
 =item B<< mspew($filehandle, \@matrix, \%options) >>
@@ -483,6 +498,7 @@ Further options with defaults:
         skip => 0, # skip the first N lines (without header)
         row_names => 0, # parse row names
         comment => qr/^#/ # the comment character
+        record_filter => undef # set a function to filter records
     );
     
 =item B<< lspew($fh_or_filename, $list, $config_options) >>
@@ -522,45 +538,6 @@ C<$config_options> is a hash ref. It can take the options:
         delim => "\t",
     };
 
-
-=item B<< \%data = hslurp($file, \%config) >>
-
-Reads the context of a file, splits the input lines acording to mslurp rules
-and takes the first element as hash reference. The remaining part of the line
-is stored as array reference under the key (first element). The configuration
-options are the same as in mslurp.
-
-The default behaviour can be influenced by 
-
-  %config = (
-    idx_col => 0, # set a different index column as hash key, 0-based
-    has_duplicates => 0, # allow duplicate entries in the index column.
-    ...
-  );
-
-If duplicates are allowed, the result data structure has the form
-
-  %data = (
-    "key1" => [
-      [ elem_x, elem_y, elem_z ], 
-      [ elem_x, elem_y, elem_z ], 
-      ...
-    ],
-    "key2" => [
-      [ elem_x, elem_y, elem_z ], 
-      [ elem_x, elem_y, elem_z ], 
-      ...
-    ],
-  );
-
-If no duplicates are allowed, C<%data> has the structure
-
-  %data = (
-    "key1" => [ elem_x, elem_y, elem_z ], 
-    "key2" => [ elem_x, elem_y, elem_z ], 
-  );
-
-C<hslurp> dies with stacktrace if it hits a duplicate key in the index column.
 
 =back
 

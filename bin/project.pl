@@ -105,8 +105,8 @@ given ($cmd) {
     say STDERR "Creating $dir/data";
     make_path( catfile( $dir, 'data' ) );
 
-    say STDERR "Creating $dir/test";
-    make_path( catfile( $dir, 'test' ) );
+    say STDERR "Creating $dir/playground";
+    make_path( catfile( $dir, 'playground' ) );
 
     chdir $dir;
     say STDERR "Creating Makefile";

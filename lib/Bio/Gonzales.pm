@@ -7,10 +7,6 @@ use strict;
 
 Bio::Gonzales - Speedy functions to manipulate biological data
 
-=head1 VERSION
-
-Version 0.02
-
 =cut
 
 our $VERSION = '0.03';
@@ -45,7 +41,7 @@ THIS IS THE ALPHA STAGE, SO BEWARE. MY TIMELINE IS TO GET THE DOCUMENTATION DONE
 
 Motivation for this package is the lack of speed or ease of use or both in other modules.
 
-=head 2 Stable modules 
+=head2 Stable modules 
 
 =head3 L<Bio::Gonzales::Seq::IO>
 
@@ -59,7 +55,7 @@ Motivation for this package is the lack of speed or ease of use or both in other
 
 =head3 L<Bio::Gonzales::Feat>
 
-=head 2 Stable, but undocumented
+=head2 Stable, but undocumented
 
 =head3 L<Bio::Gonzales::Project>
 
