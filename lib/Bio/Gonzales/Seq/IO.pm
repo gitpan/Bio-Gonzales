@@ -18,7 +18,7 @@ our $VERSION = 0.01_01;
 %EXPORT_TAGS = ();
 @EXPORT_OK   = qw(fahash);
 
-our $WIDTH = 60;
+our $WIDTH = 80;
 
 our $SEQ_FORMAT = 'all';
 

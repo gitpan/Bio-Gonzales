@@ -25,10 +25,10 @@ our $VERSION  = 0.01_01;
 our $EXTERNAL_GZ = which('pigz') // which('gzip');
 our $EXTERNAL_BZIP2 = which('bzip2');
 
-@EXPORT      = qw(rexglob epath bname openod spath);
+@EXPORT      = qw(glob_regex epath bname openod spath);
 %EXPORT_TAGS = ();
 @EXPORT_OK
-  = qw(regex_glob expand_path slurpc basename open_on_demand is_newer splitpath %ZMODES is_archive expand_home);
+  = qw(expand_path slurpc basename regex_glob open_on_demand is_newer splitpath %ZMODES is_archive expand_home);
 
 sub epath { expand_path(@_) }
 
@@ -53,9 +53,9 @@ sub expand_home {
   return $file;
 }
 
-sub regex_glob { return reglob(@_) }
+sub regex_glob { return glob_regex(@_) }
 
-sub rexglob {
+sub glob_regex {
   my ( $dir, $re ) = @_;
 
   $dir = expand_path($dir);
@@ -163,7 +163,6 @@ sub _pipe_z {
       $w->close || die "can't close gz WRITER: $!";
       open STDOUT, '>', $f or die "Can't open filehandle: $!";
       exec( $gz, '-c' );
-      exit(0);
     }
   }
 
@@ -211,7 +210,7 @@ Bio::Gonzales::Util::File - Utility functions for file stuff
 
 =head1 SYNOPSIS
 
-    use Bio::Gonzales::Util::File qw(regex_glob expand_path slurpc basename open_on_demand is_newer);
+    use Bio::Gonzales::Util::File qw(glob_regex expand_path slurpc basename open_on_demand is_newer);
 
 =head1 DESCRIPTION
 
@@ -255,7 +254,7 @@ C<$basename>, C<$suffix> ) in list context. Filename example:
 
 Expands F<~> in all supplied files and returns the crap.
 
-=item B<< @files = regex_glob($dir, $file_regex) >>
+=item B<< @files = glob_regex($dir, $file_regex) >>
 
 Selects files from C<$dir> based on the supplied C<$file_regex>.
 

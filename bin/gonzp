@@ -23,6 +23,7 @@ our @STD_PROJECT_DIRS = qw(
   doc
   data
   analysis
+  paper
 );
 
 our @REQUIRED_PROJECT_DIRS = qw(
@@ -63,7 +64,7 @@ given ($cmd) {
 
     say STDERR "Creating Makefile";
     open my $make_fh, '>', "Makefile" or confess "Can't open filehandle: $!";
-    say $make_fh ".PHONY: all clean test\n";
+    say $make_fh ".PHONY: all clean test paper\n";
     $make_fh->close;
 
     create_readme( '.', $name, $date );
@@ -74,7 +75,7 @@ given ($cmd) {
     $gi_fh->close;
 
     system qw/git init/;
-    system qw/git add Makefile README .gitignore/;
+    system qw(git add Makefile README .gitignore);
     system qw/git commit -m/, "initial commit";
 
     say STDERR "Finished";
@@ -111,16 +112,24 @@ given ($cmd) {
     chdir $dir;
     say STDERR "Creating Makefile";
     open my $make_fh, '>', "Makefile" or confess "Can't open filehandle: $!";
-    say $make_fh ".PHONY: all\n";
-    say $make_fh "";
-    #say $make_fh 'date=$(shell date +%F)';
-    say $make_fh 'ANALYSIS_VERSION=$(shell cat av)';
-    say $make_fh "\nexport ANALYSIS_VERSION\n";
-    say $make_fh 'AV=$(ANALYSIS_VERSION)' . "\n";
-    say $make_fh "all: dir\n";
-    say $make_fh "dir:";
-    say $make_fh "\t" . '@[ -d $(AV) ] || mkdir $(AV)';
+    print $make_fh <<'EOF';
+.PHONY: all
 
+ifndef ANALYSIS_VERSION
+ANALYSIS_VERSION=$(shell cat av)
+endif
+
+$(info running AV $(ANALYSIS_VERSION))
+export ANALYSIS_VERSION
+
+AV=$(ANALYSIS_VERSION)
+
+all: dir
+
+dir:
+	@[ -d $(AV) ] || mkdir $(AV)
+
+EOF
     $make_fh->close;
 
     open my $av_fh, '>', 'av' or confess "Can't open filehandle: $!";
@@ -128,7 +137,9 @@ given ($cmd) {
     $av_fh->close;
 
     say STDERR "Creating IO files dictionary";
-    touch("gonzconf.yml");
+    open my $gonzconf_fh, '>', 'gonzconf.yml' or die "Can't open filehandle: $!";
+    say $gonzconf_fh '---';
+    close $gonzconf_fh;
     #touch("INDEX");
 
     ( my $pretty_name = $name );    # =~ s/^\d+_//;
@@ -195,7 +206,7 @@ sub create_readme {
   say $readme_fh uc($name);
   say $readme_fh "=" x length($name);
   say $readme_fh "";
-  say $readme_fh "Joachim Bargsten <jw\@bargsten.org> ($date)";
+  say $readme_fh "Joachim Bargsten <jw\@bargsten.org>";
   say $readme_fh "$name erstellt am $date.";
   say $readme_fh "\n";
   $readme_fh->close;

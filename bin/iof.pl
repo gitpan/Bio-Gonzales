@@ -11,7 +11,7 @@ use String::ShellQuote;
 use Getopt::Long qw(:config auto_help);
 
 my %opt = ( quote => 1, sep=> ' ' );
-GetOptions( \%opt, 'sep|s=s', 'flat|f', 'quote|q!', 'json|j' ) or pod2usage(2);
+GetOptions( \%opt, 'sep|s=s', 'flat|flatten|f', 'quote|q!', 'json|j' ) or pod2usage(2);
 
 gonzlog->tee_stderr(0);
 gonzlog->namespace("gonzconf");
@@ -29,6 +29,14 @@ if ( $opt{json} ) {
     $args = shell_quote(@$res);
   } else {
     $args = join $opt{sep}, @$res;
+  }
+  print $args;
+} elsif ( $opt{flat} && ref $res eq 'HASH' ) {
+  my $args;
+  if ( $opt{quote} ) {
+    $args = shell_quote(keys %$res);
+  } else {
+    $args = join $opt{sep}, keys %$res;
   }
   print $args;
 } elsif ( ref $res ) {

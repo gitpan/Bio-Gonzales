@@ -1,5 +1,8 @@
 package Bio::Gonzales::Feat::IO::SWISS;
 
+# https://github.com/biopython/biopython/blob/master/Bio/SwissProt/__init__.py
+# http://web.expasy.org/docs/userman.html#GN_line
+# https://metacpan.org/pod/Bio::SeqIO::swiss
 use Mouse;
 
 use warnings;
@@ -33,13 +36,12 @@ sub next_feat {
     push @entry, $l;
     last if $l =~ m{^//};
   }
-  if(@entry > 0) {
+  if ( @entry > 0 ) {
     return Parse_entry( \@entry );
   } else {
     return;
   }
 }
-
 
 sub Parse_entry {
   my $data = shift;
@@ -83,15 +85,15 @@ sub Parse_entry {
 
     my $key = substr $e, 0, 2;
 
-   #  FIXME also parse these parts of the data entry
-    last if($key eq 'FT');
-    last if($key eq 'SQ');
+    #  FIXME also parse these parts of the data entry
+    last if ( $key eq 'FT' );
+    last if ( $key eq 'SQ' );
 
-    last if($key eq '//');
+    last if ( $key eq '//' );
 
     my $val = substr $e, 5;
 
-    die "too short: $e" unless ( $key && $val);
+    die "too short: $e" unless ( $key && $val );
     $val =~ s/[.;]\s*$//;
 
     if ( $key eq '**' ) {
@@ -107,6 +109,11 @@ sub Parse_entry {
     } elsif ( $key eq 'DT' ) {
     } elsif ( $key eq 'DE' ) {
     } elsif ( $key eq 'GN' ) {
+      next if ( $val eq 'and' );
+      for my $a ( split /;\s+/, $val ) {
+        my ( $ak, $av ) = split /=/, $a, 2;
+        $mfeat->add_attr( "gene_" . lc($ak) => [ $av ? split( /\s*,\s*/, $av) : '' ] );
+      }
     } elsif ( $key eq 'OS' ) {
     } elsif ( $key eq 'OG' ) {
     } elsif ( $key eq 'OC' ) {
@@ -182,7 +189,7 @@ sub Parse_entry {
     }
   }
 
-  $mfeat->add_attr(ID => $mfeat->attr_first('accession_number'));
+  $mfeat->add_attr( ID => $mfeat->attr_first('accession_number') );
 
   return $mfeat;
 }

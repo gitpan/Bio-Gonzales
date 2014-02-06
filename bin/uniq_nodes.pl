@@ -16,6 +16,8 @@ $opt{c} //= [0,1];
 say STDERR "using columns: " . join ", ", @{$opt{c}};
 my $f = shift;
 
+$f = \*STDIN if($f eq '-');
+
 my $mit = miterate($f, { sep => $opt{sep}});
   $mit->() if($opt{h});
 

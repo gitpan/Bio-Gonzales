@@ -30,17 +30,29 @@ sub dict_slurp {
 
   $cc //= {};
   my %c = (
-    sep     => qr/\t/,
-    header  => 0,
-    skip    => -1,
-    comment => qr/^#/,
-    key_idx => 0,
-    record_filter => undef,
+    sep              => qr/\t/,
+    header           => undef,
+    skip             => -1,
+    comment          => qr/^#/,
+    key_idx          => 0,
+    record_filter    => undef,
+    commented_header => undef,
+    concat_keys      => 1,
+    sort_keys      => 0,
     %$cc
   );
+
+  $c{header} //= $c{commented_header};
+
   my $record_filter = $c{record_filter};
 
-  my $kidx = $c{key_idx};
+  my @kidcs;
+  if ( $c{concat_keys} || !ref( $c{key_idx} ) ) {
+    @kidcs = ( $c{key_idx} );
+  } else {
+    @kidcs = @{ $c{key_idx} };
+  }
+
   my $vidx = $c{val_idx};
   # make an array from it
 
@@ -51,8 +63,13 @@ sub dict_slurp {
   my @header;
   if ( $c{header} ) {
     while ( my $raw_row = <$fh> ) {
-      next if ( $c{comment} && $raw_row =~ /$c{comment}/ );
-
+      if ( $c{comment} && $raw_row =~ /$c{comment}/ ) {
+        if ( $c{commented_header} ) {
+          $raw_row =~ s/$c{comment}//;
+        } else {
+          next;
+        }
+      }
       $raw_row =~ s/\r\n/\n/;
       chomp $raw_row;
       @header = split /$c{sep}/, $raw_row;
@@ -69,20 +86,26 @@ sub dict_slurp {
     chomp;
     next if (/^\s*$/);
 
+    next if ( $record_filter && !$record_filter->($_) );
+
     my @r = split /$c{sep}/;
 
-    next if($record_filter && !$record_filter->(\@r) );
+    for my $kidx (@kidcs) {
 
-    my $k = ( ref $kidx ? join($;, map { $_ // '' } @r[@$kidx]) : $r[$kidx] ) // '';
-    if ( $uniq && !defined($vidx) ) {
-      $map{$k} = 1;
-    } elsif ( not defined $vidx ) {
-      $map{$k}++;
-    } elsif ($uniq) {
-      $map{$k} = ( ref $vidx ? [ @r[@$vidx] ] : $r[$vidx] );
-    } else {
-      $map{$k} //= [];
-      push @{ $map{$k} }, ( ref $vidx ? [ @r[@$vidx] ] : $r[$vidx] );
+      my @k = ( ref $kidx ? map { $_ // '' } @r[@$kidx] : $r[$kidx] );
+      @k = sort @k if ( $c{sort_keys} );
+      my $k = join( $;, @k ) // '';
+
+      if ( $uniq && !defined($vidx) ) {
+        $map{$k} = 1;
+      } elsif ( not defined $vidx ) {
+        $map{$k}++;
+      } elsif ($uniq) {
+        $map{$k} = ( ref $vidx ? [ @r[@$vidx] ] : $r[$vidx] );
+      } else {
+        $map{$k} //= [];
+        push @{ $map{$k} }, ( ref $vidx ? [ @r[@$vidx] ] : $r[$vidx] );
+      }
     }
   }
 
@@ -116,23 +139,33 @@ sub mslurp {
 
   $cc //= {};
   my %c = (
-    sep       => qr/\t/,
-    header    => 0,
-    skip      => -1,
-    row_names => 0,
-    comment   => qr/^#/,
-    record_filter => undef,
+    sep              => qr/\t/,
+    header           => 0,
+    skip             => -1,
+    row_names        => 0,
+    comment          => qr/^#/,
+    commented_header => undef,
+    record_filter    => undef,
+    col_idx => undef,
     %$cc
   );
 
   my $record_filter = $c{record_filter};
 
+  my @col_idx;
+  @col_idx = @{$c{col_idx}} if($c{col_idx} && ref $c{col_idx} eq 'ARRAY');
   my @header;
   my @row_names;
 
   if ( $c{header} ) {
     while ( my $raw_row = <$fh> ) {
-      next if ( $c{comment} && $raw_row =~ /$c{comment}/ );
+      if ( $c{comment} && $raw_row =~ /$c{comment}/ ) {
+        if ( $c{commented_header} ) {
+          $raw_row =~ s/$c{comment}//;
+        } else {
+          next;
+        }
+      }
 
       $raw_row =~ s/\r\n/\n/;
       chomp $raw_row;
@@ -149,13 +182,13 @@ sub mslurp {
     chomp;
     next if (/^\s*$/);
 
-    my @row = split /$c{sep}/;
+    next if ( $record_filter && !$record_filter->($_) );
 
-    next if($record_filter && !$record_filter->(\@row) );
+    my @row = split /$c{sep}/;
 
     push @row_names, shift @row if ( $c{row_names} );
 
-    push @m, \@row;
+    push @m, (@col_idx ? [ @row[@col_idx] ] : \@row);
   }
   $fh->close unless ($fh_was_open);
 
@@ -175,9 +208,9 @@ sub miterate {
 
   $cc //= {};
   my %c = (
-    sep     => qr/\t/,
-    skip    => 0,
-    comment => qr/^#/,
+    sep           => qr/\t/,
+    skip          => 0,
+    comment       => qr/^#/,
     record_filter => undef,
     %$cc
   );
@@ -193,8 +226,9 @@ sub miterate {
       s/\r\n/\n/;
       chomp;
       next if (/^\s*$/);
+      next if ( $record_filter && !$record_filter->($_) );
+
       my @row = split /$c{sep}/;
-      next if($record_filter && !$record_filter->(\@row) );
       return \@row;
 
     }
@@ -257,7 +291,7 @@ sub mspew {
   # get the number of rows
   my $num_rows = scalar @$m;
   # find the longest column
-  my $num_cols = max map { defined $_ ? scalar @$_ : -1 } @$m;
+  my $num_cols = max - 1, map { defined $_ ? scalar @$_ : -1 } @$m;
 
   # if the header is longer, it defines the number of cols
   $num_cols = max $num_cols, scalar @$header if ( $header && @$header > 0 );
@@ -293,7 +327,7 @@ sub mspew {
     push @r, @{ $m->[$i] // [] } if ( $i < @$m );
     #fill the square if desired
     if ($square) {
-      my $missing = $square - @r;
+      my $missing = $num_cols - @r;
       push @r, (undef) x $missing;
     }
     #print row
@@ -316,7 +350,7 @@ sub _quote {
       ( my $str = $_ ) =~ s/"/""/g;
       qq{"$str"};
     }
-  } @{ $_[0] };
+  } @$f;
   return \@fields;
 }
 
@@ -363,7 +397,7 @@ sub xlsx_spew {
 
 sub xlsx_slurp {
   my ( $src, $cc ) = @_;
-  my @m;
+  #my @m;
   #my ( $fh, $fh_was_open ) = open_on_demand( $src, '<' );
 
   eval "use Spreadsheet::XLSX; 1" or confess "could not load Spreadsheet::XLSX";
@@ -379,7 +413,9 @@ sub xlsx_slurp {
     my @m;
     my $cells = $sheet->{Cells};
     for my $r (@$cells) {
-      push @m, [ map { $_->{Val} } @$r ];
+      my @e;
+      for my $cell (@$r) { push @e, $cell->{Val}; }
+      push @m, \@e;
     }
     $ms{$sname} = \@m;
   }
@@ -417,6 +453,8 @@ Provides functions for common matrix/list IO.
     key_idx => 0,
     val_idx => undef,
     uniq    => 0,
+    record_filter => undef,
+    concat_keys => 1,
   );
 
 Setups:
@@ -431,7 +469,14 @@ Setups:
 
 =item uniq = 0 && val_idx    =>  read into ( key => [ [ @values ], [ @more_values ] ], ...)
 
+=item concat_keys
+
+Concatenate the keys by C<< $; >>. If set to 0, key columns are taken in a
+serial fashion and are merged to one big column.
+
 =back
+
+If key_idx is an array, the keys columns are joined by C<$;> to build the hash key.
 
 =item B<< mspew($filename, \@matrix, \%options) >>
 

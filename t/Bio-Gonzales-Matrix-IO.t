@@ -42,40 +42,77 @@ EOD
 1\t2\t3\t4
 5\t6\t7\t8
 EOF
-  my $sh = IO::Scalar->new(\$data);
-  my $m = mslurp($sh);
+  my $sh = IO::Scalar->new( \$data );
+  my $m = mslurp( $sh, { col_idx => [ 0, 2 ] } );
   $sh->close;
-  is_deeply($m, [[1,2,3,4],[5,6,7,8]]);
+  is_deeply( $m, [ [ 1, 3 ], [ 5, 7 ] ] );
+}
+
+{
+  my $data = <<EOF;
+1\t2\t3\t4
+5\t6\t7\t8
+EOF
+  my $sh = IO::Scalar->new( \$data );
+  my $m  = mslurp($sh);
+  $sh->close;
+  is_deeply( $m, [ [ 1, 2, 3, 4 ], [ 5, 6, 7, 8 ] ] );
+}
+{
+  my $data;
+  my $sh = IO::Scalar->new( \$data );
+  my $fh = \*STDOUT;
+  my $m  = mspew( $fh, [], { header => [qw/a b/] } );
+  #is_deeply($m, [[1,2,3,4],[5,6,7,8]]);
 }
 {
   my $data = <<EOF;
 1\t2\t3\t4
 5\t6\t7\t8
 EOF
-  my $sh = IO::Scalar->new(\$data);
-  my $m = dict_slurp($sh, { key_idx => 1, val_idx => 0});
+  my $sh = IO::Scalar->new( \$data );
+  my $m = dict_slurp( $sh, { key_idx => 1, val_idx => 0 } );
   $sh->close;
-  is_deeply($m, { 2 => [ 1] , 6 => [5] });
+  is_deeply( $m, { 2 => [1], 6 => [5] } );
 }
 {
   my $data = <<EOF;
 1\t2\t3\t4
 5\t6\t7\t8
 EOF
-  my $sh = IO::Scalar->new(\$data);
-  my $m = dict_slurp($sh, { key_idx => 1, val_idx => [ 0, 2]});
+  my $sh = IO::Scalar->new( \$data );
+  my $m = dict_slurp( $sh, { key_idx => 1, val_idx => [ 0, 2 ] } );
   $sh->close;
-  is_deeply($m, { 2 => [ [ 1, 3]] , 6 => [[5, 7]] });
+  is_deeply( $m, { 2 => [ [ 1, 3 ] ], 6 => [ [ 5, 7 ] ] } );
 }
 {
   my $data = <<EOF;
 1\t2\t3\t4
 5\t6\t7\t8
 EOF
-  my $sh = IO::Scalar->new(\$data);
-  my $m = dict_slurp($sh, { key_idx => 1, val_idx => [ 0, 2], uniq => 1});
+  my $sh = IO::Scalar->new( \$data );
+  my $m = dict_slurp( $sh, { key_idx => 1, val_idx => [ 0, 2 ], uniq => 1 } );
   $sh->close;
-  is_deeply($m, { 2 => [  1, 3] , 6 => [5, 7] });
+  is_deeply( $m, { 2 => [ 1, 3 ], 6 => [ 5, 7 ] } );
+}
+
+{
+  my $data = <<EOF;
+1\t2\t3\t4
+5\t6\t7\t8
+EOF
+  my $sh = IO::Scalar->new( \$data );
+  my $m  = dict_slurp(
+    $sh,
+    {
+      key_idx       => 1,
+      val_idx       => [ 0, 2 ],
+      uniq          => 1,
+      record_filter => sub { $_[0] =~ /3/ }
+    }
+  );
+  $sh->close;
+  is_deeply( $m, { 2 => [ 1, 3 ] } );
 }
 
 done_testing();

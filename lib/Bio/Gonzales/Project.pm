@@ -23,7 +23,7 @@ our ( @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
 our $VERSION = 0.01_01;
 
 @EXPORT
-  = qw(catfile nfi $ANALYSIS_VERSION path_to analysis_path msg error debug gonzlog env_add gonzconf iof);
+  = qw(catfile nfi $ANALYSIS_VERSION path_to analysis_path msg error debug gonzlog env_add gonzconf iof $GONZLOG);
 %EXPORT_TAGS = ();
 @EXPORT_OK   = qw();
 
@@ -65,17 +65,17 @@ my $SUBSTITUTE_GONZCONF;
   );
 }
 
-our $log = Bio::Gonzales::Util::Log->new( path => _nfi('gonzlog'), level => 'info', namespace => $FindBin::Script );
-$log->info("invoked")    # if a script is run, log it
+our $GONZLOG = Bio::Gonzales::Util::Log->new( path => _nfi('gonzlog'), level => 'info', namespace => $FindBin::Script );
+$GONZLOG->info("invoked")    # if a script is run, log it
   if(!$ENV{GONZLOG_SILENT});
 
 sub gonzlog {
-  return $log;
+  return $GONZLOG;
 }
 
 sub nfi {
   my $f = _nfi(@_);
-  $log->info("(nfi) > $f <");
+  $GONZLOG->info("(nfi) > $f <");
   return $f;
 }
 
@@ -109,12 +109,12 @@ sub gonzconf {
   $SUBSTITUTE_GONZCONF->visit($data);
 
   if ( $key && exists( $data->{$key} ) ) {
-    $log->info( "(gonzconf) > $key <", p( $data->{$key} ) );
+    $GONZLOG->info( "(gonzconf) > $key <", p( $data->{$key} ) );
     return $data->{$key};
   } elsif ($key) {
     confess "$key not found in gonzconf";
   } else {
-    $log->info( "(gonzconf) dump", p($data) );
+    $GONZLOG->info( "(gonzconf) dump", p($data) );
     return $data;
   }
 }

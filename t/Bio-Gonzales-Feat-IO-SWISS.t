@@ -36,6 +36,7 @@ my %acc = (
 
 my %feats;
 while ( my $f = $swissin->next_feat ) {
+  #diag Dumper $f;
   ok( !exists( $feats{ $f->id } ) );
   $feats{ $f->id } = $f;
   $acc{ $f->id }++;

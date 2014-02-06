@@ -147,12 +147,12 @@ sub as_primaryseq {
     -seq      => $self->seq,
     -id       => $self->id,
     -desc     => $self->desc,
-    -alphabet => $self->_guess_alphabet,
+    -alphabet => $self->guess_alphabet,
     -direct   => 1,
   );
 }
 
-sub _guess_alphabet {
+sub guess_alphabet {
   my ($self) = @_;
 
   my $str = $self->seq();
@@ -189,7 +189,7 @@ sub _guess_alphabet {
 sub revcom {
   my ($self) = @_;
 
-  $self->seq( _revcom_from_string( $self->seq, $self->_guess_alphabet ) );
+  $self->seq( _revcom_from_string( $self->seq, $self->guess_alphabet ) );
 
   return $self;
 }

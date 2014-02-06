@@ -35,16 +35,16 @@ z <- z[!z.incomplete.idx,]
 if(nrow(z) < 3)
   stop("at least 3 data points are needed")
 
-z7 <- z[,1:7]
-z7[!is.finite(z7[,"pcpu"]),"pcpu"] <- 0
+cat("data rows:", nrow(z), "\n", file=stderr())
+z[!is.finite(z[,"pcpu"]),"pcpu"] <- 0
 
 info.byte <- data.frame(factor=c(1,1024,1024,1024), abbr=c("b", "kb", "mb", "gb"))
 info.ts <- data.frame(factor=c(1, 60, 60, 24), abbr=c("sec", "min", "h", "d"))
 
-t.scale <- scale_human(max(z7[,"time"]), info.ts)
-m.scale <- scale_human(median(z7[,"rss"]), info.byte)
+t.scale <- scale_human(max(z[,"time"]), info.ts)
+m.scale <- scale_human(median(z[,"rss"]), info.byte)
 
-k2 <- with(z7, by(z7, tp, function(x) {
+k2 <- with(z, by(z, tp, function(x) {
     c(
       t=mean(x[,"time"])/t.scale[["factor"]],
       m=mean(x[,"rss"])/m.scale[["factor"]],
@@ -52,12 +52,16 @@ k2 <- with(z7, by(z7, tp, function(x) {
     )
 }))
 k <- as.data.frame(do.call(rbind,k2))
+k$pc <- k$pc * 100
 
 
 ## old method. Got rid of plyr dependency
 #library(plyr)
 #k <- ddply(z7, .(tp), summarise, t=mean(time)/t.scale[["factor"]], m=mean(rss)/m.scale[["factor"]], pc=mean(pcpu))
 
+span <- 0.3
+#if(nrow(k) > 300)
+  #span <- 1/20
 
 pdf(fout,width=13, height=6)
 plot(
@@ -69,7 +73,7 @@ plot(
      pch=16,
      col="grey20"
      )
-with(k, lines(loess.smooth(t, pc, span=1/20), col = "brown", lwd=1.6))
+with(k, lines(loess.smooth(t, pc, span=span), col = "brown", lwd=1.6))
 plot(
      m ~ t,
      data=k,
@@ -79,5 +83,5 @@ plot(
      pch=16,
      col="grey20"
     )
-with(k, lines(loess.smooth(t, m, span=1/20), col = "brown", lwd=1.6))
+with(k, lines(loess.smooth(t, m, span=span), col = "brown", lwd=1.6))
 dev.off()
