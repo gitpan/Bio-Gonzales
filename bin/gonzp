@@ -137,7 +137,7 @@ EOF
     $av_fh->close;
 
     say STDERR "Creating IO files dictionary";
-    open my $gonzconf_fh, '>', 'gonzconf.yml' or die "Can't open filehandle: $!";
+    open my $gonzconf_fh, '>', 'gonz.conf.yml' or die "Can't open filehandle: $!";
     say $gonzconf_fh '---';
     close $gonzconf_fh;
     #touch("INDEX");
@@ -146,7 +146,7 @@ EOF
     create_readme( '.', $pretty_name, $date );
 
     system qw/git init/;
-    system qw/git add Makefile README av gonzconf.yml/;
+    system qw/git add Makefile README av gonz.conf.yml/;
     system qw/git commit -m/, "initial commit";
 
     if ($project_dir) {

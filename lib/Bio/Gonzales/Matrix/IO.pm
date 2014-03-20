@@ -46,10 +46,12 @@ sub dict_slurp {
 
   my $record_filter = $c{record_filter};
 
+  # concatenate keys to a big string
   my @kidcs;
   if ( $c{concat_keys} || !ref( $c{key_idx} ) ) {
     @kidcs = ( $c{key_idx} );
   } else {
+    # or treat them separately
     @kidcs = @{ $c{key_idx} };
   }
 

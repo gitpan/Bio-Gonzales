@@ -10,7 +10,7 @@ use Pod::Usage;
 use String::ShellQuote;
 use Getopt::Long qw(:config auto_help);
 
-my %opt = ( quote => 1, sep=> ' ' );
+my %opt = ( quote => 1, sep => ' ' );
 GetOptions( \%opt, 'sep|s=s', 'flat|flatten|f', 'quote|q!', 'json|j' ) or pod2usage(2);
 
 gonzlog->tee_stderr(0);
@@ -18,7 +18,13 @@ gonzlog->namespace("gonzconf");
 my @args = @ARGV;
 my $res  = gonzconf shift @args;
 for my $a (@args) {
-  $res = $res->{$a};
+  if ( ref $res eq 'ARRAY' && $a =~ /^\d+$/  && scalar @$res > $a) {
+    $res = $res->[$a];
+  } elsif ( ref $res eq 'HASH' ) {
+    $res = $res->{$a};
+  } else {
+    die "could not access the structure: $a";
+  }
 }
 
 if ( $opt{json} ) {
@@ -34,7 +40,7 @@ if ( $opt{json} ) {
 } elsif ( $opt{flat} && ref $res eq 'HASH' ) {
   my $args;
   if ( $opt{quote} ) {
-    $args = shell_quote(keys %$res);
+    $args = shell_quote( keys %$res );
   } else {
     $args = join $opt{sep}, keys %$res;
   }

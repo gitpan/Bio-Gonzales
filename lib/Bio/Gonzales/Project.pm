@@ -65,7 +65,7 @@ my $SUBSTITUTE_GONZCONF;
   );
 }
 
-our $GONZLOG = Bio::Gonzales::Util::Log->new( path => _nfi('gonzlog'), level => 'info', namespace => $FindBin::Script );
+our $GONZLOG = Bio::Gonzales::Util::Log->new( path => _nfi('gonz.log'), level => 'info', namespace => $FindBin::Script );
 $GONZLOG->info("invoked")    # if a script is run, log it
   if(!$ENV{GONZLOG_SILENT});
 
@@ -97,6 +97,8 @@ sub gonzconf {
   my $data;
   if ( -f 'gonzconf.yml' ) {
     $data = yslurp('gonzconf.yml');
+  } elsif ( -f 'gonz.conf.yml' ) {
+    $data = yslurp('gonz.conf.yml');
   } elsif ( -f 'iof.yml' ) {
     $data = yslurp('iof.yml');
   } elsif ( -f 'io_files.yml' ) {

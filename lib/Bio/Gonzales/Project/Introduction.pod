@@ -1,10 +1,37 @@
 =encoding utf8
 
-=head1 Bio::Gonzales::Project
+=head1 NAME
+
+Bio::Gonzales::Project - organize your computational experiments
+
+=head1 SYNOPSIS
 
 Inspired by L<A Quick Guide to Organizing Computational Biology
 Projects|http://www.ploscompbiol.org/article/info%3Adoi%2F10.1371%2Fjournal.pcbi.1000424>
 this module makes it easy to organise computational biology projects.
+
+    $ gonzp init human_genome
+    $ cd human_genome/analysis
+
+    $ gonzp analysis genome_assembly
+    $ cd genome_assembly
+
+    # set up scripts, Makefile, etc.
+    # ...
+
+    $ make human_genome_assembly
+
+
+    $ gonzp analysis genome_annotation # finds the project directory automatically
+    $ cd ../genome_annotation
+
+    # set up scripts, Makefile, etc.
+    # ...
+
+    $ make human_genome_annotation
+
+
+=head1 DESCRIPTION
 
 =head2 Project Layout
 
@@ -38,7 +65,7 @@ Thus, the basic layout is of an C<example> project is:
 
 =head3 analysis
 
-Create it with C<< gonzp add <analysis_name> >>
+Create it with C<< gonzp analysis <analysis_name> >>
 
 The analysis directory contains all analyses that have been done. One directory
 per analysis. The layout in C<example/analysis> is therefore:
@@ -278,3 +305,11 @@ L<Bio::Gonzales::Project> exports the function C<gonzlog> by default. To log stu
     $log->info("message");
 
 The namespace is the filename of the invoking script.
+
+=head1 SEE ALSO
+
+=head1 AUTHOR
+
+jw bargsten, C<< <joachim.bargsten at wur.nl> >>
+
+=cut
