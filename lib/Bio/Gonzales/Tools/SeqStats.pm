@@ -14,7 +14,7 @@ use MouseX::Foreign 'Bio::Root::Root';
 with 'Bio::Gonzales::Role::BioPerl::Constructor';
 
 use 5.010;
-our $VERSION = 0.01_01;
+our $VERSION = '0.0545'; # VERSION
 
 has seq => ( is => 'rw' );
 

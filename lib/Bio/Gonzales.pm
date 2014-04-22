@@ -9,7 +9,7 @@ Bio::Gonzales - Speedy functions to manipulate biological data
 
 =cut
 
-our $VERSION = '0.03';
+our $VERSION = '0.0545'; # VERSION
 
 
 =head1 SYNOPSIS

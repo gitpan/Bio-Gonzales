@@ -8,7 +8,7 @@ use Carp;
 
 use base 'Exporter';
 our ( @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
-our $VERSION = 0.03;
+our $VERSION = '0.0545'; # VERSION
 
 @EXPORT      = qw();
 %EXPORT_TAGS = ();

@@ -12,7 +12,7 @@ use warnings;
 use strict;
 use Carp;
 
-our $VERSION = 0.01_01;
+our $VERSION = '0.0545'; # VERSION
 use 5.010;
 
 has seq => ( is => 'rw' );

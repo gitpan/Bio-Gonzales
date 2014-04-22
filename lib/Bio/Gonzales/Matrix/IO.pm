@@ -17,7 +17,7 @@ use Bio::Gonzales::Util::File qw/open_on_demand slurpc/;
 
 use base 'Exporter';
 our ( @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
-our $VERSION = 0.01_01;
+our $VERSION = '0.0545'; # VERSION
 
 @EXPORT      = qw(mslurp mspew lslurp miterate lspew dict_slurp dict_spew);
 %EXPORT_TAGS = ();

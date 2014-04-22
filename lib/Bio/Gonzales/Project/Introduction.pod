@@ -73,7 +73,7 @@ per analysis. The layout in C<example/analysis> is therefore:
     ./important_computational_experiment/Makefile     (the Makefile to start single analysis steps)
     ./important_computational_experiment/av           (the analysis version)
     ./important_computational_experiment/README       (some analysis-specific documentation)
-    ./important_computational_experiment/gonzconf.yml (configuration stuff, e.g. file locations or parameters)
+    ./important_computational_experiment/gonz.conf.yml (configuration stuff, e.g. file locations or parameters)
     ./important_computational_experiment/2014-01-28/  (the analysis directory derived from the version stored in "av")
     ./important_computational_experiment/data/        (analysis-specific data)
     ./important_computational_experiment/playground/  (here you can try stuff)
@@ -194,7 +194,7 @@ changed:
     
 =head2 Configuration
 
-The configuration is stored in C<gonzconf.yml> and accessible via commandline
+The configuration is stored in C<gonz.conf.yml> and accessible via commandline
 and perl functions. The format of the configuration is
 L<YAML|http://www.yaml.org>. You can therefore freely store any configuration
 in various data formats, such as lists or dictionaries.
@@ -209,7 +209,7 @@ commandline script is called C<gonzconf>. See
 for help. C<gonzconf> looks for the C<gonzconf.yml> and extracts parts of the
 configuration. Example:
 
-C<gonzconf.yml>
+C<gonz.conf.yml>
 
     ---
     genotypes:

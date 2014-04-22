@@ -11,7 +11,7 @@ use 5.010;
 use YAML::XS;
 use parent 'YAML::XS';
 our ( @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
-our $VERSION = 0.01;
+our $VERSION = '0.0545'; # VERSION
 
 carp "Bio::Gonzales::Util::YAML is deprecated, use Bio::Gonzales::Util::Cerial instead";
 

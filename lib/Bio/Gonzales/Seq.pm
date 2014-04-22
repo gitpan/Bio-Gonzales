@@ -7,7 +7,7 @@ use Carp;
 use Data::Dumper;
 use Bio::Gonzales::Seq::IO;
 
-our $VERSION = 0.01_01;
+our $VERSION = '0.0545'; # VERSION
 
 has id     => ( is => 'rw', required   => 1 );
 has desc   => ( is => 'rw', default    => '' );

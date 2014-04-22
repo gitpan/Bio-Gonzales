@@ -19,7 +19,7 @@ use 5.010;
 
 use base 'Exporter';
 our ( @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
-our $VERSION = 0.02_02;
+our $VERSION = '0.0545'; # VERSION
 
 @EXPORT      = qw();
 %EXPORT_TAGS = ();

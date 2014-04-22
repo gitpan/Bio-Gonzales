@@ -9,7 +9,7 @@ use YAML::XS;
 use JSON::XS;
 use base 'Exporter';
 our ( @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
-our $VERSION = 0.01;
+our $VERSION = '0.0545'; # VERSION
 
 @EXPORT = qw(
     ythaw yfreeze yslurp yspew

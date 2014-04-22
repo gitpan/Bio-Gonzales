@@ -12,7 +12,7 @@ use Bio::Gonzales::Util qw/flatten/;
 
 use base 'Exporter';
 our ( @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
-our $VERSION = 0.01_01;
+our $VERSION = '0.0545'; # VERSION
 
 @EXPORT      = qw(faslurp faspew fasubseq faiterate);
 %EXPORT_TAGS = ();

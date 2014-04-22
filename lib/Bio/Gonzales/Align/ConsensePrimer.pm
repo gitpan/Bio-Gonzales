@@ -14,7 +14,7 @@ use List::MoreUtils qw/indexes any zip/;
 use Data::Dumper;
 $Data::Dumper::Terse = 1;
 
-our $VERSION = 0.01_01;
+our $VERSION = '0.0545'; # VERSION
 
 has cds_seqs            => ( is => 'rw', required => 1 );
 has genomic_seqs        => ( is => 'rw', required => 1 );

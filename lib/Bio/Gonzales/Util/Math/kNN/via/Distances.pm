@@ -9,7 +9,7 @@ use List::MoreUtils qw/indexes/;
 use Data::Dumper;
 
 use 5.010;
-our $VERSION = 0.01_01;
+our $VERSION = '0.0545'; # VERSION
 
 =head1 NAME
 

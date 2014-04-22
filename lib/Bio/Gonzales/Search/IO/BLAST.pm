@@ -14,7 +14,7 @@ use Bio::Gonzales::Seq::IO qw(faiterate faspew);
 
 use Params::Validate qw/validate/;
 our ( @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
-our $VERSION = 0.01_01;
+our $VERSION = '0.0545'; # VERSION
 
 @EXPORT      = qw();
 %EXPORT_TAGS = ();
