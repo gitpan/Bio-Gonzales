@@ -4,7 +4,7 @@ BEGIN { $ENV{GONZLOG_SILENT} = 1 }
 
 use 5.010;
 
-use Bio::Gonzales::Project;
+use Bio::Gonzales::Project::Functions;
 use Bio::Gonzales::Util::Cerial;
 use Pod::Usage;
 use String::ShellQuote;

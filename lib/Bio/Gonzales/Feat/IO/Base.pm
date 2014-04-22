@@ -12,7 +12,7 @@ use 5.010;
 
 with 'Bio::Gonzales::Util::Role::FileIO';
 
-our $VERSION = '0.0545'; # VERSION
+our $VERSION = '0.0546'; # VERSION
 
 has _collection => ( is => 'rw', default => sub { { subfeats => {}, feats => {} } } );
 has _num => ( is => 'rw', default => 0 );

@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-Bio::Gonzales::Project - organize your computational experiments
+Bio::Gonzales::Project::Functions - organize your computational experiments
 
 =head1 SYNOPSIS
 
@@ -92,7 +92,7 @@ Cange it to whatever you want. A common use case is to change input data or
 parameters without clobbering the previous results. Therefore, change the
 analysis version to a different date and rerun the whole analysis.
 
-The analysis version is integral part of L<Bio::Gonzales::Project> and therefore accessible via
+The analysis version is integral part of L<Bio::Gonzales::Project::Functions> and therefore accessible via
 
 =over 4
 
@@ -100,7 +100,7 @@ The analysis version is integral part of L<Bio::Gonzales::Project> and therefore
 
 as C< $(AV) > variable.
 
-=item Via an exported function of L<Bio::Gonzales::Project>, B<< nfi($filename) >>
+=item Via an exported function of L<Bio::Gonzales::Project::Functions>, B<< nfi($filename) >>
 
 For example you want to calculate the average number of leaves for 4 plant
 accessions. You have 3 replicates, so 12 records:
@@ -131,7 +131,7 @@ Script C<bin/calc_number_of_avg_leaves.pl>
     use strict;
     use 5.010;
     
-    use Bio::Gonzales::Project;
+    use Bio::Gonzales::Project::Functions;
     use List::Util qw(sum);
     
     # read in some raw data
@@ -169,13 +169,13 @@ Script C<bin/calc_number_of_avg_leaves.pl>
  
 =back
 
-=item Via an exported variable of L<Bio::Gonzales::Project>, B<< $ANALYSIS_VERSION >>
+=item Via an exported variable of L<Bio::Gonzales::Project::Functions>, B<< $ANALYSIS_VERSION >>
 
 The script changes slightly, see here the changed lines:
 
 original:
 
-    use Bio::Gonzales::Project;
+    use Bio::Gonzales::Project::Functions;
 
     ...
 
@@ -185,7 +185,7 @@ original:
 
 changed:
 
-    use Bio::Gonzales::Project qw(:DEFAULT $ANALYSIS_VERSION);  # CHANGED
+    use Bio::Gonzales::Project::Functions qw(:DEFAULT $ANALYSIS_VERSION);  # CHANGED
 
     ...
 
@@ -244,7 +244,7 @@ Example:
     use strict;
     use 5.010;
     
-    use Bio::Gonzales::Project;
+    use Bio::Gonzales::Project::Functions;
     
     my $config = gonzconf();
     my @genotypes = @{$config->{genotypes}};
@@ -267,7 +267,7 @@ Example:
     use strict;
     use 5.010;
     
-    use Bio::Gonzales::Project;
+    use Bio::Gonzales::Project::Functions;
     
     my @genotypes = @{gonzconf("genotypes")};
     
@@ -280,7 +280,7 @@ Example:
 
 =head2 Logging
 
-L<Bio::Gonzales::Project> comes with logging included. The logged info is
+L<Bio::Gonzales::Project::Functions> comes with logging included. The logged info is
 stored in C<$ANALYSIS_VERSION/gonzlog>. Therefore every analysis has a
 different log file. 5 log levels are available: debug, info, warn, error, fatal 
 
@@ -295,7 +295,7 @@ to log something. The log level is hardcoded to "info".
 =head3 Access via perl
 
 
-L<Bio::Gonzales::Project> exports the function C<gonzlog> by default. To log stuff you run
+L<Bio::Gonzales::Project::Functions> exports the function C<gonzlog> by default. To log stuff you run
 
     gonzlog->info("message");
 

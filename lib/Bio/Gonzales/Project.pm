@@ -1,56 +1,52 @@
 package Bio::Gonzales::Project;
 
+use Mouse;
+
 use warnings;
 use strict;
 use Carp;
-
-use 5.010;
-
-use POSIX;
-use File::Spec::Functions qw/catfile/;
-use File::Spec;
 use FindBin;
+use File::Spec;
 use Bio::Gonzales::Util::File qw/slurpc/;
 use Bio::Gonzales::Util::Cerial;
 use Bio::Gonzales::Util::Development::File;
 use Data::Visitor::Callback;
 use Bio::Gonzales::Util::Log;
 use Data::Printer;
-use Carp;
+use POSIX;
 
-use base 'Exporter';
-our ( @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
-our $VERSION = '0.0545'; # VERSION
+use 5.010;
 
-@EXPORT
-  = qw(catfile nfi $ANALYSIS_VERSION path_to analysis_path msg error debug gonzlog env_add gonzconf iof $GONZLOG);
-%EXPORT_TAGS = ();
-@EXPORT_OK   = qw();
+our $VERSION = '0.0546'; # VERSION
 
-our $ANALYSIS_VERSION;
-if ( $ENV{ANALYSIS_VERSION} ) {
-  $ANALYSIS_VERSION = $ENV{ANALYSIS_VERSION};
-} elsif ( -f 'av' ) {
-  $ANALYSIS_VERSION = ( slurpc('av') )[0];
+has 'analysis_version' => ( is => 'rw', builder    => '_build_analysis_version' );
+has '_substitute_conf' => ( is => 'rw', lazy_build => 1 );
+has 'config'           => ( is => 'rw', lazy_build => 1 );
+has 'log'              => ( is => 'rw', builder    => '_build_log' );
+
+sub _build_analysis_version {
+  my ($self) = @_;
+
+  if ( $ENV{ANALYSIS_VERSION} ) {
+    return $ENV{ANALYSIS_VERSION};
+  } elsif ( -f 'av' ) {
+    return ( slurpc('av') )[0];
+  } else {
+    carp "using current dir as output dir";
+    return '.';
+  }
 }
 
-unless ( $ANALYSIS_VERSION && $ANALYSIS_VERSION =~ /^[-A-Za-z_.0-9]+$/ ) {
-  carp "analysis version not or not correctly specified, variable contains: " . ($ANALYSIS_VERSION // 'nothing');
-  carp "using current dir as output dir";
-  $ANALYSIS_VERSION = '.';
-} else {
-  mkdir $ANALYSIS_VERSION unless ( -d $ANALYSIS_VERSION );
-}
+sub _build__substitute_conf {
+  my ($self) = @_;
 
-my $SUBSTITUTE_GONZCONF;
-{
   my %subs = (
-    av      => sub { return $ANALYSIS_VERSION },
-    path_to => \&path_to,
-    data    => sub { return path_to('data') },
+    av      => sub { return $self->analysis_version },
+    path_to => sub { return $self->path_to(@_) },
+    data    => sub { return $self->path_to('data') },
   );
 
-  $SUBSTITUTE_GONZCONF = Data::Visitor::Callback->new(
+  return Data::Visitor::Callback->new(
     plain_value => sub {
       return unless defined $_;
       $_ =~ s{ ^ ~ ( [^/]* ) }
@@ -65,40 +61,24 @@ my $SUBSTITUTE_GONZCONF;
   );
 }
 
-our $GONZLOG = Bio::Gonzales::Util::Log->new( path => _nfi('gonz.log'), level => 'info', namespace => $FindBin::Script );
-$GONZLOG->info("invoked")    # if a script is run, log it
-  if(!$ENV{GONZLOG_SILENT});
+sub _build_log {
+  my ($self) = @_;
 
-sub gonzlog {
-  return $GONZLOG;
+  return Bio::Gonzales::Util::Log->new(
+    path      => $self->_nfi('gonz.log'),
+    level     => 'info',
+    namespace => $FindBin::Script
+  );
 }
 
-sub nfi {
-  my $f = _nfi(@_);
-  $GONZLOG->info("(nfi) > $f <");
-  return $f;
-}
-
-sub env_add {
-  my $e = shift;
-
-  while ( my ( $k, $v ) = each %$e ) {
-    $ENV{$k} = join ":", $v, $ENV{$k};
-  }
-}
-
-sub _nfi { return File::Spec->catfile( $ANALYSIS_VERSION, @_ ) }
-
-sub iof { return gonzconf(@_) }
-
-sub gonzconf {
-  my ($key) = @_;
+sub _build_config {
+  my ($self) = @_;
 
   my $data;
-  if ( -f 'gonzconf.yml' ) {
-    $data = yslurp('gonzconf.yml');
-  } elsif ( -f 'gonz.conf.yml' ) {
+  if ( -f 'gonz.conf.yml' ) {
     $data = yslurp('gonz.conf.yml');
+  } elsif ( -f 'gonzconf.yml' ) {
+    $data = yslurp('gonzconf.yml');
   } elsif ( -f 'iof.yml' ) {
     $data = yslurp('iof.yml');
   } elsif ( -f 'io_files.yml' ) {
@@ -108,20 +88,79 @@ sub gonzconf {
   } else {
     confess "io file not found";
   }
-  $SUBSTITUTE_GONZCONF->visit($data);
+  $self->_substitute_conf->visit($data);
+  return $data;
+}
 
-  if ( $key && exists( $data->{$key} ) ) {
-    $GONZLOG->info( "(gonzconf) > $key <", p( $data->{$key} ) );
-    return $data->{$key};
-  } elsif ($key) {
-    confess "$key not found in gonzconf";
+sub BUILD {
+  my ($self) = @_;
+
+  my $av = $self->analysis_version;
+  unless ( $av && $av =~ /^[-A-Za-z_.0-9]+$/ ) {
+    carp "analysis version not or not correctly specified, variable contains: " . ( $av // 'nothing' );
+    carp "using current dir as output dir";
+    $self->analysis_version('.');
   } else {
-    $GONZLOG->info( "(gonzconf) dump", p($data) );
-    return $data;
+    mkdir $av unless ( -d $av );
   }
+
+  $self->log->info("invoked")    # if a script is run, log it
+    if ( !$ENV{GONZLOG_SILENT} );
+}
+
+sub av { shift->analysis_version(@_) }
+
+sub c { shift->conf(@_) }
+
+sub nfi {
+  my $self = shift;
+
+  my $f = $self->_nfi(@_);
+  $self->log->info("(nfi) > $f <");
+  return $f;
+}
+
+sub _nfi {
+  my $self = shift;
+  return File::Spec->catfile( $self->analysis_version, @_ );
+}
+
+sub conf {
+  my ( $self, @keys ) = @_;
+
+  my $data = $self->config;
+
+  for my $k (@keys) {
+    confess "empty key supplied" unless ($k);
+    my $r = ref $data;
+    if ( $r && $r eq 'HASH' ) {
+      if ( exists( $data->{$k} ) ) {
+        $data = $data->{$k};
+      } else {
+        confess "$k not found in gonzconf";
+      }
+    } elsif ( $r && $r eq 'ARRAY' ) {
+      if ( exists( $data->[$k] ) ) {
+        $data = $data->[$k];
+      } else {
+        confess "$k not found in gonzconf";
+      }
+    } else {
+      confess "$k not found in gonzconf";
+    }
+  }
+  if (@keys) {
+    $self->log->info( "(gonzconf) > " . join( " ", @keys  ) . " <", p($data) );
+
+  } else {
+    $self->log->info( "(gonzconf) dump", p($data) );
+  }
+  return $data;
 }
 
 sub path_to {
+  my $self = shift;
+
   my $home = Bio::Gonzales::Util::Development::File::find_root(
     {
       location => '.',
@@ -136,55 +175,9 @@ sub path_to {
 }
 
 sub analysis_path {
+  my $self = shift;
 
-  return path_to( "analysis", @_ );
+  return $self->path_to( "analysis", @_ );
 }
 
-1;
-
-__END__
-
-=head1 NAME
-
-Bio::Gonzales::AV - analysis project utils
-
-=head1 SYNOPSIS
-
-    use Bio::Gonzales::AV qw(catfile nfi $ANALYSIS_VERSION iof path_to analysis_path msg error debug);
-
-=head1 SUBROUTINES
-
-=over 4
-
-=item B<< msg(@stuff) >>
-
-say C<@stuff> to C<STDERR>.
-
-=item B<< path_to($filename) >>
-
-Locate the root of the project and prepend it to the C<$filename>.
-
-=item B<< iof() >>
-
-get access to the IO files config file. Use like
-
-    my $protein_files = iof()->{protein_files}
-
-=item B<< nfi($filename) >>
-
-Prepend the current analysis version diretory to the filename.
-
-
-=item B<< catfile($path, $file) >>
-
-make them whole again...
-
-=back
-
-=head1 SEE ALSO
-
-=head1 AUTHOR
-
-jw bargsten, C<< <joachim.bargsten at wur.nl> >>
-
-=cut
+__PACKAGE__->meta->make_immutable();

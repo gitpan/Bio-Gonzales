@@ -9,7 +9,7 @@ use Carp;
 
 use 5.010;
 
-our $VERSION = '0.0545'; # VERSION
+our $VERSION = '0.0546'; # VERSION
 
 extends 'Bio::Gonzales::Feat::IO::Base';
 

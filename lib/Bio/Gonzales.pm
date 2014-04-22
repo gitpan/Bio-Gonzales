@@ -9,7 +9,7 @@ Bio::Gonzales - Speedy functions to manipulate biological data
 
 =cut
 
-our $VERSION = '0.0545'; # VERSION
+our $VERSION = '0.0546'; # VERSION
 
 
 =head1 SYNOPSIS
@@ -58,6 +58,8 @@ Motivation for this package is the lack of speed or ease of use or both in other
 =head2 Stable, but undocumented
 
 =head3 L<Bio::Gonzales::Project>
+
+=head3 L<Bio::Gonzales::Project::Functions>
 
 =head3 L<Bio::Gonzales::MiniFeat>
 

@@ -11,7 +11,7 @@ use Scalar::Util qw/refaddr/;
 
 our $QUIET_MODE;
 
-our $VERSION = '0.0545'; # VERSION
+our $VERSION = '0.0546'; # VERSION
 
 has [qw/source type/] => ( is => 'rw', required => 1 );
 

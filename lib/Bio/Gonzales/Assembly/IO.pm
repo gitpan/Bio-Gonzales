@@ -13,7 +13,7 @@ use Bio::Gonzales::Matrix::IO qw(mslurp);
 
 use base 'Exporter';
 our ( @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
-our $VERSION = '0.0545'; # VERSION
+our $VERSION = '0.0546'; # VERSION
 
 @EXPORT      = qw();
 %EXPORT_TAGS = ();

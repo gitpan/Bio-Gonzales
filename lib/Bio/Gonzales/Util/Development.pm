@@ -19,11 +19,19 @@ use 5.010;
 
 use base 'Exporter';
 our ( @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
-our $VERSION = '0.0545'; # VERSION
+our $VERSION = '0.0546'; # VERSION
 
 @EXPORT      = qw();
 %EXPORT_TAGS = ();
-@EXPORT_OK   = qw(find_files_to_complete filter_files);
+@EXPORT_OK   = qw(find_files_to_complete filter_files env_add);
+
+sub env_add {
+  my $e = shift;
+
+  while ( my ( $k, $v ) = each %$e ) {
+    $ENV{$k} = join ":", $v, $ENV{$k};
+  }
+}
 
 =head1 NAME
 
