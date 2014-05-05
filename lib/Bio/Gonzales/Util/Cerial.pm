@@ -9,7 +9,7 @@ use YAML::XS;
 use JSON::XS;
 use base 'Exporter';
 our ( @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
-our $VERSION = '0.0546'; # VERSION
+our $VERSION = '0.0547'; # VERSION
 
 @EXPORT = qw(
     ythaw yfreeze yslurp yspew
@@ -60,30 +60,73 @@ __END__
 
 =head1 NAME
 
-Bio::Gonzales::Util::Cerial - convenience functions for yaml storage
+Bio::Gonzales::Util::Cerial - convenience functions for yaml and json IO
 
 =head1 SYNOPSIS
 
-    use Bio::Gonzales::Util::YAML;
+    use Bio::Gonzales::Util::Cerial;
 
-    my $yaml_string = freeze \%data;
-    my $data = thaw $yaml_string;
+    # YAML IO
+    my $yaml_string = yfreeze(\%data);
+    my $data = ythaw($yaml_string);
 
-    freeze_file $filename, \%data ;
-    my $data = thaw_file $filename;
+    yspew($filename, \%data);
+    my $data = yslurp($filename);
+
+    # JSON IO
+    my $json_string = jfreeze(\%data);
+    my $data = jthaw($json_string);
+
+    jspew($filename, \%data);
+    my $data = jslurp($filename);
+
 
 =head1 DESCRIPTION
     
-    Bio::Gonzales::Util::YAML provides some handy functions to work with yaml data
+=item B<< $yaml_string = yfreeze(\%data) >>
+
+Serialize data structure as yaml string
+
+=item B<< $data = ythaw($yaml_string) >>
+
+UNserialize data structure from yaml string
+
+=item B<< yspew($filename, \%data) >>
+
+Serialize data structure as yaml string to a file
+
+=item B<< my $data = yslurp($filename) >>
+
+UNserialize data structure from yaml file
+
+=item B<< my $json_string = jfreeze(\%data) >>
+
+Serialize data structure as json string
+
+=item B<< my $data = jthaw($json_string) >>
+
+UNserialize data structure from json string
+
+=item B<< jspew($filename, \%data) >>
+
+Serialize data structure as json string to a file
+
+=item B<< my $data = jslurp($filename) >>
+
+UNserialize data structure from json file
 
 =head1 EXPORT
 
-=head2 $yaml_string = freeze($data,...);
+The following functions are exported by default
 
-=head2 $data = thaw($yaml_string);
+    ythaw
+    yfreeze
+    yslurp
+    yspew
 
-=head2 freeze_file($filename, $data, ...);
-
-=head2 $data = thaw_file($filename);
+    jthaw
+    jfreeze
+    jslurp
+    jspew
 
 =cut

@@ -1,13 +1,11 @@
 use warnings;
 use Data::Dumper;
 use Test::More;
-use Bio::Gonzales::Util::YAML;
 use Bio::Gonzales::Util qw/slice/;
+use Bio::Gonzales::Util::Cerial;
+
 
 BEGIN {
-  eval "use Bio::Perl";
-  plan skip_all => "bioperl equired for testing" if $@;
-
   eval "use Bio::SeqIO::fastq";
 
   use_ok('Bio::Gonzales::Seq::IO::fastq');
@@ -16,7 +14,7 @@ BEGIN {
 my $o = Bio::Gonzales::Seq::IO::fastq->new( variant => 'solexa' );
 #my $t = Bio::SeqIO::fastq->new(-variant => 'solexa');
 #freeze_file("t/Bio-Gonzales-Seq-IO-fastq.solexa.ref.cache.yml", { slice(\%{$t}, qw/phred_int2chr phred_fp2chr sol2phred qual_start qual_end qual_offset chr2qual qual2chr/)});
-my $cache = thaw_file('t/Bio-Gonzales-Seq-IO-fastq.solexa.ref.cache.yml');
+my $cache = yslurp('t/Bio-Gonzales-Seq-IO-fastq.solexa.ref.cache.yml');
 
 {
   my %c2q;

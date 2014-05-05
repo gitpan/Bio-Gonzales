@@ -21,7 +21,7 @@ our %ZMODES = (
 
 use base 'Exporter';
 our ( @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
-our $VERSION = '0.0546'; # VERSION
+our $VERSION = '0.0547'; # VERSION
 our $EXTERNAL_GZ = which('pigz') // which('gzip');
 our $EXTERNAL_BZIP2 = which('bzip2');
 

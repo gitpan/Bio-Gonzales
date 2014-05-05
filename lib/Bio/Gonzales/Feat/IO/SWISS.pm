@@ -23,7 +23,7 @@ extends 'Bio::Gonzales::Feat::IO::Base';
 #'OSs', 'OGs', 'OCs', 'OXs', 'OHs',
 #'Refs', 'CCs', 'DRs', 'PE', 'KWs', 'FTs', 'Stars', 'SQs');
 
-our $VERSION = '0.0546'; # VERSION
+our $VERSION = '0.0547'; # VERSION
 
 sub next_feat {
   my ($self) = @_;
@@ -193,3 +193,5 @@ sub Parse_entry {
 
   return $mfeat;
 }
+
+__PACKAGE__->meta->make_immutable();

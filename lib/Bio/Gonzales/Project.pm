@@ -17,12 +17,14 @@ use POSIX;
 
 use 5.010;
 
-our $VERSION = '0.0546'; # VERSION
+our $VERSION = '0.0547'; # VERSION
 
 has 'analysis_version' => ( is => 'rw', builder    => '_build_analysis_version' );
 has '_substitute_conf' => ( is => 'rw', lazy_build => 1 );
 has 'config'           => ( is => 'rw', lazy_build => 1 );
+has 'merge_av_config'    => ( is => 'rw', default    => 1 );
 has 'log'              => ( is => 'rw', builder    => '_build_log' );
+has 'config_file' => (is => 'rw', default => 'gonz.conf.yml');
 
 sub _build_analysis_version {
   my ($self) = @_;
@@ -74,22 +76,31 @@ sub _build_log {
 sub _build_config {
   my ($self) = @_;
 
-  my $data;
-  if ( -f 'gonz.conf.yml' ) {
-    $data = yslurp('gonz.conf.yml');
-  } elsif ( -f 'gonzconf.yml' ) {
-    $data = yslurp('gonzconf.yml');
-  } elsif ( -f 'iof.yml' ) {
-    $data = yslurp('iof.yml');
-  } elsif ( -f 'io_files.yml' ) {
-    $data = thaw_file('io_files.yml');
-  } elsif ( -f 'iof.json' ) {
-    $data = jslurp('iof.json');
+  my $conf;
+  my $conf_f = $self->config_file;
+  if ( -f $conf_f ) {
+    $conf = yslurp($conf_f);
+
+    confess "configuration file >> $conf_f << is not a hash/dictionary structure"
+      if ( ref $conf ne 'HASH' );
+
   } else {
-    confess "io file not found";
+    confess "configuration file >> $conf_f << not found";
   }
-  $self->_substitute_conf->visit($data);
-  return $data;
+  $self->_substitute_conf->visit($conf);
+
+  my $av_conf_f = join( ".", $self->analysis_version, "conf", "yml" );
+  if ( $self->merge_av_config && $av_conf_f !~ /^\./ && -f $av_conf_f ) {
+
+    my $av_conf = yslurp($av_conf_f);
+    confess "configuration file >> $av_conf_f << is not a hash/dictionary structure"
+      if ( ref $av_conf ne 'HASH' );
+
+    $self->_substitute_conf->visit($av_conf);
+
+    $conf = { %$conf, %$av_conf };
+  }
+  return $conf;
 }
 
 sub BUILD {
@@ -150,7 +161,7 @@ sub conf {
     }
   }
   if (@keys) {
-    $self->log->info( "(gonzconf) > " . join( " ", @keys  ) . " <", p($data) );
+    $self->log->info( "(gonzconf) > " . join( " ", @keys ) . " <", p($data) );
 
   } else {
     $self->log->info( "(gonzconf) dump", p($data) );

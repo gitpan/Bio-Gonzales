@@ -8,12 +8,11 @@ use Carp;
 
 use 5.010;
 
-use Bio::Gonzales::Util::YAML qw/freeze_file/;
 use Bio::Gonzales::Seq::IO qw/faiterate faspew/;
 use Bio::Gonzales::Feat::IO::GFF3;
 use List::MoreUtils qw/all any none/;
 
-our $VERSION = '0.0546'; # VERSION
+our $VERSION = '0.0547'; # VERSION
 
 has gff_file         => ( is => 'rw', required => 1 );
 has seq_files        => ( is => 'rw', default  => sub { [] } );
@@ -144,7 +143,7 @@ sub freeze_feats {
 sub freeze_ids {
     my ( $self, $file ) = @_;
 
-    freeze_file( $file, [ map { $_->id } $self->feats ] );
+    yspew( $file, [ map { $_->id } $self->feats ] );
 }
 
 sub freeze_seqs {

@@ -7,7 +7,7 @@ use strict;
 
 use 5.010;
 
-our $VERSION = '0.0546'; # VERSION
+our $VERSION = '0.0547'; # VERSION
 
 
 has seqs => (is => 'rw', default => sub { [] });

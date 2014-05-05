@@ -12,7 +12,7 @@ use strict;
 
 use 5.010;
 
-our $VERSION = '0.0546'; # VERSION
+our $VERSION = '0.0547'; # VERSION
 
 # Supported log level
 my $LEVEL = { debug => 1, info => 2, warn => 3, error => 4, fatal => 5 };

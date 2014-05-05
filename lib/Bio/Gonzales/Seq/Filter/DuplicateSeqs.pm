@@ -11,7 +11,7 @@ use List::MoreUtils;
 use List::Util qw/reduce/;
 
 use 5.010;
-our $VERSION = '0.0546'; # VERSION
+our $VERSION = '0.0547'; # VERSION
 
 has namespace => ( is => 'rw' );
 

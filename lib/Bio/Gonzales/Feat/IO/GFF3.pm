@@ -16,7 +16,7 @@ use Scalar::Util qw/blessed/;
 
 extends 'Bio::Gonzales::Feat::IO::Base';
 
-our $VERSION = '0.0546'; # VERSION
+our $VERSION = '0.0547'; # VERSION
 
 our $FASTA_RE         = qr/^\>/;
 our $SEQ_REGION_RE    = qr/^\#\#sequence-region\s+(\S+)\s+(\S+)\s+(\S+)\s*/;
@@ -74,40 +74,31 @@ sub _parse_header {
   while ( defined( $l = $fhi->() ) ) {
     next if ( !$l || $l =~ /^\s*$/ );
 
-    given ($l) {
-      when (/^##gff-version\s+(\d+)/) {
-        confess "I need gff version 3" if ( $1 != 3 );
-        # if no tag given, assume 3 by default
-      }
-      when (/$SEQ_REGION_RE/) {
-        my ( $seqid, $start, $end ) = ( $1, $2, $3 );
-        push @{ $self->segments }, { id => $seqid, start => $start, end => $end };
-      }
-      when (/^\#\#(feature-ontology)\s+(.*)$/) {
-        $self->pragmas->{$1} //= [];
-        push @{ $self->pragmas->{$1} }, $2
-      }
-      when (/^\#\#(attribute-ontology)\s+(.*)$/) {
-        $self->pragmas->{$1} //= [];
-        push @{ $self->pragmas->{$1} }, $2
-      }
-      when (/^\#\#(source-ontology)\s+(.*)$/) {
-        $self->pragmas->{$1} //= [];
-        push @{ $self->pragmas->{$1} }, $2
-      }
-      when (/^\#\#(species)\s+(.*)$/) {
-        $self->pragmas->{$1} //= [];
-        push @{ $self->pragmas->{$1} }, $2
-      }
-      when (/^\#\#(genome-build)\s+(.*)$/) {
-        $self->pragmas->{$1} //= [];
-        push @{ $self->pragmas->{$1} }, $2
-      }
-      when (/^(\#\#\#)/)    { }
-      when (/^(\#\#FASTA)/) { }
-      when (/$FASTA_RE/)    { $self->_parse_seq($l); }
-      default {
-      }
+    if ( $l =~ /^##gff-version\s+(\d+)/ ) {
+      confess "I need gff version 3" if ( $1 != 3 );
+      # if no tag given, assume 3 by default
+    } elsif ( $l =~ /$SEQ_REGION_RE/ ) {
+      my ( $seqid, $start, $end ) = ( $1, $2, $3 );
+      push @{ $self->segments }, { id => $seqid, start => $start, end => $end };
+    } elsif ( $l =~ /^\#\#(feature-ontology)\s+(.*)$/ ) {
+      $self->pragmas->{$1} //= [];
+      push @{ $self->pragmas->{$1} }, $2;
+    } elsif ( $l =~ /^\#\#(attribute-ontology)\s+(.*)$/ ) {
+      $self->pragmas->{$1} //= [];
+      push @{ $self->pragmas->{$1} }, $2;
+    } elsif ( $l =~ /^\#\#(source-ontology)\s+(.*)$/ ) {
+      $self->pragmas->{$1} //= [];
+      push @{ $self->pragmas->{$1} }, $2;
+    } elsif ( $l =~ /^\#\#(species)\s+(.*)$/ ) {
+      $self->pragmas->{$1} //= [];
+      push @{ $self->pragmas->{$1} }, $2;
+    } elsif ( $l =~ /^\#\#(genome-build)\s+(.*)$/ ) {
+      $self->pragmas->{$1} //= [];
+      push @{ $self->pragmas->{$1} }, $2;
+    } elsif ( $l =~ /^(\#\#\#)/ ) {
+    } elsif ( $l =~ /^(\#\#FASTA)/ ) {
+    } elsif ( $l =~ /$FASTA_RE/ ) {
+      $self->_parse_seq($l);
     }
 
     #looks like the header is over!
@@ -168,18 +159,18 @@ sub next_feat {
 
   my $l;
   while ( defined( $l = $fhi->() ) ) {
-    given ($l) {
-      when (/$SEQ_REGION_RE/) {
-        my ( $seqid, $start, $end ) = ( $1, $2, $3 );
-        push @{ $self->segments }, { id => $seqid, start => $start, end => $end };
-      }
-      when (/^\#\#\#/) { next; }
-      when ( /^\#/ || /^\s*$/ || m{^//} ) { next; }
-      when (/$FASTA_RE/) {
-        $self->_parse_seq($l);
-        next;
-      }
-      default { last; }
+    if ( $l =~ /$SEQ_REGION_RE/ ) {
+      my ( $seqid, $start, $end ) = ( $1, $2, $3 );
+      push @{ $self->segments }, { id => $seqid, start => $start, end => $end };
+    } elsif ( $l =~ /^\#\#\#/ ) {
+      next;
+    } elsif ( $l =~ /^\#/ || $l=~ /^\s*$/ || $l =~ m{^//} ) {
+      next;
+    } elsif ( $l =~ /$FASTA_RE/ ) {
+      $self->_parse_seq($l);
+      next;
+    } else {
+      last;
     }
   }
   return unless $l;
@@ -197,7 +188,8 @@ sub write_feat {
     unless ( $self->_wrote_sth_before );
 
   for my $f (@feats) {
-    confess "feature is no a Bio::Gonzales::Feat: " . Dumper($f)  unless(blessed $f eq 'Bio::Gonzales::Feat');
+    confess "feature is no a Bio::Gonzales::Feat: " . Dumper($f)
+      unless ( blessed $f eq 'Bio::Gonzales::Feat' );
     print $fh _to_gff3( $f, $self->escape_whitespace );
   }
 
@@ -255,11 +247,9 @@ sub _parse_gff_line {
 
   $d[8] = $self->_split_attributes( $d[8] );
 
-  given ( $d[6] ) {
-    when ('-') { $d[6] = -1; }
-    when ('+') { $d[6] = 1; }
-    when ('.') { $d[6] = 0; }
-  }
+  if    ( $d[6] eq '-' ) { $d[6] = -1; }
+  elsif ( $d[6] eq '+' ) { $d[6] = 1; }
+  else                   { $d[6] = 0; }
 
   my %feat;
   for ( my $i = 0; $i < @GFF_COLUMN_NAMES; $i++ ) {
@@ -297,13 +287,9 @@ sub _to_gff3 {
   my ( $feat, $escape_whitespace_everywhere ) = @_;
 
   my $strand;
-  given ( $feat->strand ) {
-    when ( $_ < 0 ) { $strand = '-'; }
-    when ( $_ > 0 ) { $strand = '+'; }
-    default {
-      $strand = '.';
-    }
-  }
+  if    ( $feat->strand < 0 ) { $strand = '-'; }
+  elsif ( $feat->strand > 0 ) { $strand = '+'; }
+  else                        { $strand = '.'; }
 
   my $attributes = $feat->attributes;
   #sort the attributes

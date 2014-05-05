@@ -14,7 +14,7 @@ use Bio::Gonzales::Seq::IO qw(faiterate faspew);
 
 use Params::Validate qw/validate/;
 our ( @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
-our $VERSION = '0.0546'; # VERSION
+our $VERSION = '0.0547'; # VERSION
 
 @EXPORT      = qw();
 %EXPORT_TAGS = ();
@@ -55,10 +55,10 @@ sub makeblastdb {
   push @cmd, '-title', $basename;
   push @cmd, '-parse_seqids' if ( $c{parse_seqids} );
   push @cmd, '-hash_index'   if ( $c{hash_index} );
-  given ( $c{alphabet} ) {
-    when (/^(?:a|p)/)   { push @cmd, '-dbtype', 'prot' }
-    when (/^(?:n|d|r)/) { push @cmd, '-dbtype', 'nucl' }
-  }
+
+  if    ( $c{alphabet} =~ /^(?:a|p)/ )   { push @cmd, '-dbtype', 'prot' }
+  elsif ( $c{alphabet} =~ /^(?:n|d|r)/ ) { push @cmd, '-dbtype', 'nucl' }
+
   $c{wd} //= './';
   $c{db_prefix} //= $basename;
   $c{db_prefix} .= '.bdb';

@@ -13,7 +13,7 @@ use warnings;
 use strict;
 
 use 5.010;
-our $VERSION = '0.0546'; # VERSION
+our $VERSION = '0.0547'; # VERSION
 
 with 'Bio::Gonzales::Role::BioPerl::Constructor';
 
