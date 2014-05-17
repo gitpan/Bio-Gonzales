@@ -17,14 +17,14 @@ use POSIX;
 
 use 5.010;
 
-our $VERSION = '0.0547'; # VERSION
+our $VERSION = '0.0547_01'; # VERSION
 
 has 'analysis_version' => ( is => 'rw', builder    => '_build_analysis_version' );
 has '_substitute_conf' => ( is => 'rw', lazy_build => 1 );
 has 'config'           => ( is => 'rw', lazy_build => 1 );
-has 'merge_av_config'    => ( is => 'rw', default    => 1 );
+has 'merge_av_config'  => ( is => 'rw', default    => 1 );
 has 'log'              => ( is => 'rw', builder    => '_build_log' );
-has 'config_file' => (is => 'rw', default => 'gonz.conf.yml');
+has 'config_file'      => ( is => 'rw', default    => 'gonz.conf.yml' );
 
 sub _build_analysis_version {
   my ($self) = @_;
@@ -83,11 +83,10 @@ sub _build_config {
 
     confess "configuration file >> $conf_f << is not a hash/dictionary structure"
       if ( ref $conf ne 'HASH' );
-
-  } else {
-    confess "configuration file >> $conf_f << not found";
+    $self->log->info("reading >> $conf_f <<");
+    $self->_substitute_conf->visit($conf);
   }
-  $self->_substitute_conf->visit($conf);
+
 
   my $av_conf_f = join( ".", $self->analysis_version, "conf", "yml" );
   if ( $self->merge_av_config && $av_conf_f !~ /^\./ && -f $av_conf_f ) {
@@ -96,6 +95,7 @@ sub _build_config {
     confess "configuration file >> $av_conf_f << is not a hash/dictionary structure"
       if ( ref $av_conf ne 'HASH' );
 
+    $self->log->info("reading >> $av_conf_f <<");
     $self->_substitute_conf->visit($av_conf);
 
     $conf = { %$conf, %$av_conf };

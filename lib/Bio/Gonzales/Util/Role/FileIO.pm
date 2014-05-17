@@ -10,7 +10,7 @@ use Carp;
 use IO::Handle;
 use IO::Zlib;
 
-our $VERSION = '0.0547'; # VERSION
+our $VERSION = '0.0547_01'; # VERSION
 
 has fh              => ( is => 'rw' );
 has mode            => ( is => 'rw', default => '<' );

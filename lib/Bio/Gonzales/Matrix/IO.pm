@@ -4,7 +4,6 @@ use warnings;
 use strict;
 use Carp;
 use Data::Dumper;
-use File::Slurp qw/slurp/;
 use List::MoreUtils qw/uniq/;
 use Bio::Gonzales::Util qw/flatten/;
 
@@ -17,7 +16,7 @@ use Bio::Gonzales::Util::File qw/open_on_demand slurpc/;
 
 use base 'Exporter';
 our ( @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
-our $VERSION = '0.0547'; # VERSION
+our $VERSION = '0.0547_01'; # VERSION
 
 @EXPORT      = qw(mslurp mspew lslurp miterate lspew dict_slurp dict_spew);
 %EXPORT_TAGS = ();

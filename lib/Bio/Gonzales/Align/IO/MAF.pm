@@ -13,7 +13,7 @@ use Bio::Gonzales::Seq;
 use Bio::Gonzales::Align;
 
 with 'Bio::Gonzales::Util::Role::FileIO';
-our $VERSION = '0.0547'; # VERSION
+our $VERSION = '0.0547_01'; # VERSION
 
 sub BUILD {
   my ($self) = @_;

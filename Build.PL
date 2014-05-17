@@ -17,7 +17,7 @@ my %module_build_args = (
     "Joachim Bargsten <jwb\@cpan.org>"
   ],
   "dist_name" => "Bio-Gonzales",
-  "dist_version" => "0.0547",
+  "dist_version" => "0.0547_01",
   "license" => "perl",
   "module_name" => "Bio::Gonzales",
   "recommends" => {
@@ -42,7 +42,6 @@ my %module_build_args = (
     "File::Copy" => 0,
     "File::Find" => 0,
     "File::Path" => 0,
-    "File::Slurp" => 0,
     "File::Spec" => 0,
     "File::Temp" => 0,
     "File::Touch" => 0,

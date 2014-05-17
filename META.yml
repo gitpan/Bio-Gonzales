@@ -34,7 +34,6 @@ requires:
   File::Copy: 0
   File::Find: 0
   File::Path: 0
-  File::Slurp: 0
   File::Spec: 0
   File::Temp: 0
   File::Touch: 0
@@ -63,4 +62,4 @@ requires:
   perl: 5.010
 resources:
   repository: git://github.com/jwbargsten/biogonzales_pl.git
-version: 0.0547
+version: 0.0547_01

@@ -6,14 +6,14 @@ use Carp;
 
 use 5.010;
 
-use File::Slurp qw/slurp/;
 use List::MoreUtils qw/zip/;
 use Bio::Gonzales::Seq::IO qw/fahash/;
 use Bio::Gonzales::Matrix::IO qw(mslurp);
+use Bio::Gonzales::Util::File qw/slurpc/;
 
 use base 'Exporter';
 our ( @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
-our $VERSION = '0.0547'; # VERSION
+our $VERSION = '0.0547_01'; # VERSION
 
 @EXPORT      = qw();
 %EXPORT_TAGS = ();
@@ -35,12 +35,10 @@ sub INFO { say STDERR @_; }
 sub agpslurp {
   my ($file) = @_;
 
-  my @lines = slurp $file;
+  my @lines = slurpc( $file);
 
   my @agp;
   for my $l (@lines) {
-    $l =~ s/\r\n/\n/;
-    chomp $l;
     my @a = split /\t/, $l;
 
     #add last field in case somebody forgot to add it...

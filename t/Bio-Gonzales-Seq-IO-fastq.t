@@ -50,8 +50,24 @@ my $cache = yslurp('t/Bio-Gonzales-Seq-IO-fastq.solexa.ref.cache.yml');
 }
 
 {
-  my %phred_fp2chr = %{ $o->cache->{phred_fp2chr} };
-  is_deeply( \%phred_fp2chr, $cache->{phred_fp2chr} );
+  # format floating point keys. Some platforms might get a slightly different
+  # result, so round the numbers. (fp2chr means floating point to character)
+
+  my $phred_fp2chr_raw =  $o->cache->{phred_fp2chr};
+
+  my %phred_fp2chr_got;
+  while(my ($fp, $chr) = each %$phred_fp2chr_raw) { $phred_fp2chr_got{sprintf("%.6f", $fp)} = $chr }
+
+  my %phred_fp2chr_exp;
+  while(my ($fp, $chr) = each %{$cache->{phred_fp2chr}}) { $phred_fp2chr_exp{sprintf("%.6f", $fp)} = $chr }
+
+
+  unless(is_deeply( \%phred_fp2chr_got, \%phred_fp2chr_exp)) {
+    diag "GOT OUTPUT:";
+    diag Dumper \%phred_fp2chr_raw;
+    diag "EXPECTED OUTPUT:";
+    diag Dumper $cache->{phred_fp2chr};
+  }
 }
 
 #phred_int2chr

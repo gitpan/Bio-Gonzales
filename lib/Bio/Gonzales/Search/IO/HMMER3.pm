@@ -15,7 +15,7 @@ use Bio::Gonzales::Util qw/hash_merge/;
 
 with 'Bio::Gonzales::Util::Role::FileIO';
 
-our $VERSION = '0.0547'; # VERSION
+our $VERSION = '0.0547_01'; # VERSION
 
 has '_current_query' => ( is => 'rw', default => 0 );
 has '_current_hit'   => ( is => 'rw', default => 0 );

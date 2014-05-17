@@ -9,7 +9,7 @@ use Set::IntervalTree;
 
 use 5.010;
 
-our $VERSION = '0.0547'; # VERSION
+our $VERSION = '0.0547_01'; # VERSION
 
 has _tree => ( is => 'rw', default => sub { Set::IntervalTree->new } );
 has keep_coords => ( is => 'rw', default => 1 );

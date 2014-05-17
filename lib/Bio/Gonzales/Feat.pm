@@ -11,7 +11,7 @@ use Scalar::Util qw/refaddr/;
 
 our $QUIET_MODE;
 
-our $VERSION = '0.0547'; # VERSION
+our $VERSION = '0.0547_01'; # VERSION
 
 extends 'Bio::Gonzales::MiniFeat';
 
