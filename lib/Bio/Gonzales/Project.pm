@@ -12,14 +12,22 @@ use Bio::Gonzales::Util::Cerial;
 use Bio::Gonzales::Util::Development::File;
 use Data::Visitor::Callback;
 use Bio::Gonzales::Util::Log;
-use Data::Printer;
+use Data::Printer {
+  indent         => 2,
+  colored        => '0',
+  use_prototypes => 0,
+  rc_file        => '',
+};
+
 use POSIX;
 
 use 5.010;
 
-our $VERSION = '0.0547_01'; # VERSION
+our $VERSION = '0.0548'; # VERSION
 
-has 'analysis_version' => ( is => 'rw', builder    => '_build_analysis_version' );
+has '_config_key_cache' => ( is => 'rw', default => sub { {} } );
+has '_nfi_cache'        => ( is => 'rw', default => sub { {} } );
+has 'analysis_version'  => ( is => 'rw', builder => '_build_analysis_version' );
 has '_substitute_conf' => ( is => 'rw', lazy_build => 1 );
 has 'config'           => ( is => 'rw', lazy_build => 1 );
 has 'merge_av_config'  => ( is => 'rw', default    => 1 );
@@ -29,14 +37,16 @@ has 'config_file'      => ( is => 'rw', default    => 'gonz.conf.yml' );
 sub _build_analysis_version {
   my ($self) = @_;
 
+  my $av;
   if ( $ENV{ANALYSIS_VERSION} ) {
-    return $ENV{ANALYSIS_VERSION};
+    $av = $ENV{ANALYSIS_VERSION};
   } elsif ( -f 'av' ) {
-    return ( slurpc('av') )[0];
+    $av = ( slurpc('av') )[0];
   } else {
     carp "using current dir as output dir";
-    return '.';
+    $av = '.';
   }
+  return _prepare_av($av);
 }
 
 sub _build__substitute_conf {
@@ -87,7 +97,6 @@ sub _build_config {
     $self->_substitute_conf->visit($conf);
   }
 
-
   my $av_conf_f = join( ".", $self->analysis_version, "conf", "yml" );
   if ( $self->merge_av_config && $av_conf_f !~ /^\./ && -f $av_conf_f ) {
 
@@ -107,16 +116,33 @@ sub BUILD {
   my ($self) = @_;
 
   my $av = $self->analysis_version;
-  unless ( $av && $av =~ /^[-A-Za-z_.0-9]+$/ ) {
+
+  $self->log->info("invoked ($av)")    # if a script is run, log it
+    if ( !$ENV{GONZLOG_SILENT} );
+}
+
+around 'analysis_version' => sub {
+  my $orig = shift;
+  my $self = shift;
+
+  return $self->$orig()
+    unless @_;
+
+  return $self->$orig( _prepare_av(shift) );
+};
+
+sub _prepare_av {
+  my $av = shift;
+  if ( !$av ) {
+    return '.';
+  } elsif ( $av =~ /^[-A-Za-z_.0-9]+$/ ) {
+    mkdir $av unless ( -d $av );
+  } else {
     carp "analysis version not or not correctly specified, variable contains: " . ( $av // 'nothing' );
     carp "using current dir as output dir";
-    $self->analysis_version('.');
-  } else {
-    mkdir $av unless ( -d $av );
+    return '.';
   }
-
-  $self->log->info("invoked")    # if a script is run, log it
-    if ( !$ENV{GONZLOG_SILENT} );
+  return $av;
 }
 
 sub av { shift->analysis_version(@_) }
@@ -127,7 +153,11 @@ sub nfi {
   my $self = shift;
 
   my $f = $self->_nfi(@_);
-  $self->log->info("(nfi) > $f <");
+
+  # only log it once per filename
+  $self->log->info("(nfi) > $f <")
+    unless ( $self->_nfi_cache->{$f}++ );
+
   return $f;
 }
 
@@ -161,10 +191,13 @@ sub conf {
     }
   }
   if (@keys) {
-    $self->log->info( "(gonzconf) > " . join( " ", @keys ) . " <", p($data) );
+    my $k = join( " ", @keys );
+    $self->log->info( "(gonzconf) > " . $k . " <", p($data) )
+      unless ( $self->_config_key_cache->{ '_' . $k }++ );
 
   } else {
-    $self->log->info( "(gonzconf) dump", p($data) );
+    $self->log->info( "(gonzconf) dump", p($data) )
+      unless ( $self->_config_key_cache->{'_'}++ );
   }
   return $data;
 }

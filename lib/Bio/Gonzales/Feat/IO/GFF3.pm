@@ -16,7 +16,7 @@ use Scalar::Util qw/blessed/;
 
 extends 'Bio::Gonzales::Feat::IO::Base';
 
-our $VERSION = '0.0547_01'; # VERSION
+our $VERSION = '0.0548'; # VERSION
 
 our $FASTA_RE         = qr/^\>/;
 our $SEQ_REGION_RE    = qr/^\#\#sequence-region\s+(\S+)\s+(\S+)\s+(\S+)\s*/;

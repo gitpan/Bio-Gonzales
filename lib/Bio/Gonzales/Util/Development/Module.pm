@@ -15,7 +15,7 @@ use Cwd;
 
 use base 'Exporter';
 our ( @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
-our $VERSION = '0.0547_01'; # VERSION
+our $VERSION = '0.0548'; # VERSION
 
 @EXPORT      = qw();
 %EXPORT_TAGS = ();

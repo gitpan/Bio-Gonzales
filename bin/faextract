@@ -8,19 +8,20 @@ use Carp;
 
 use 5.010;
 
-use Bio::Gonzales::Seq::IO qw/faslurp/;
-use Bio::Gonzales::Util qw/bigslice/;
+use Bio::Gonzales::Seq::IO qw/faslurp faiterate/;
 use Bio::Gonzales::Util::File qw/slurpc/;
 use FindBin;
 
 my ( $idlist, @files ) = @ARGV;
 
 confess "usage: $FindBin::Script <FILE_WITH_ONE_ID_PER_LINE> <FASTA_FILE_1> ... <FASTA_FILE_N>"
-    unless ( $idlist && @files && @files > 0 );
+  unless ( $idlist && @files && @files > 0 );
 
-my @ids = slurpc($idlist);
+my %ids = map { $_ => 1 } slurpc($idlist);
 
 for my $f (@files) {
-    my $seq = faslurp $f;
-    map { print "$_" } values %{ bigslice( $seq, @ids ) };
+  my $fi = faiterate($f);
+  while ( my $s = $fi->() ) {
+    print $s if ( $ids{ $s->id } );
+  }
 }

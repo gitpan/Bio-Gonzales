@@ -9,7 +9,7 @@ use Data::Dumper;
 
 use base 'Exporter';
 our ( @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
-our $VERSION = '0.0547_01'; # VERSION
+our $VERSION = '0.0548'; # VERSION
 
 @EXPORT      = qw();
 %EXPORT_TAGS = ();
@@ -21,6 +21,7 @@ our $VERSION = '0.0547_01'; # VERSION
   pairwise_identities
   map_seqids
   seqid_mapper
+  crc64
 );
 
 sub pairwise_identity_l {
@@ -51,7 +52,7 @@ sub _pairwise_identity_generic {
     $seq2_gaps = () = $seq2 =~ /-/g;
   }
 
-  my $mask = $seq1 ^ $seq2;
+  my $mask    = $seq1 ^ $seq2;
   my $matches = $mask =~ tr/\x0/\x0/;
 
   my $longest;
@@ -152,6 +153,45 @@ sub seqid_mapper {
 
     return ( $id, $orig_id );
   };
+}
+
+{
+  my $POLY64REVh = 0xd8000000;
+  my @CRCTableh  = 256;
+  my @CRCTablel  = 256;
+  my $initialized;
+
+  sub crc64 {
+    my $sequence = shift;
+    my $crcl     = 0;
+    my $crch     = 0;
+    if ( !$initialized ) {
+      $initialized = 1;
+      for ( my $i = 0; $i < 256; $i++ ) {
+        my $partl = $i;
+        my $parth = 0;
+        for ( my $j = 0; $j < 8; $j++ ) {
+          my $rflag = $partl & 1;
+          $partl >>= 1;
+          $partl |= ( 1 << 31 ) if $parth & 1;
+          $parth >>= 1;
+          $parth ^= $POLY64REVh if $rflag;
+        }
+        $CRCTableh[$i] = $parth;
+        $CRCTablel[$i] = $partl;
+      }
+    }
+
+    foreach ( split '', $sequence ) {
+      my $shr        = ( $crch & 0xFF ) << 24;
+      my $temp1h     = $crch >> 8;
+      my $temp1l     = ( $crcl >> 8 ) | $shr;
+      my $tableindex = ( $crcl ^ ( unpack "C", $_ ) ) & 0xFF;
+      $crch = $temp1h ^ $CRCTableh[$tableindex];
+      $crcl = $temp1l ^ $CRCTablel[$tableindex];
+    }
+    return wantarray ? ( $crch, $crcl ) : sprintf( "%08X%08X", $crch, $crcl );
+  }
 }
 
 1;

@@ -45,7 +45,7 @@ my ( $opt, $usage ) = describe_options(
     }
   ],
   [ 'use_db=s' => 'use preexisting database' ],
-  [ 'opt|o=s@', "add these options to the blast search, e.g. --opt '-evalue 10e-5'" ],
+  [ 'opt|o=s@', "add these options to the blast search, e.g. --opt '-evalue 10e-5' or -o '-outfmt 7'" ],
   [ 'help',     "print usage message and exit" ],
   [ 'wd=s',     "set working dir, use temp dir as default" ],
 );

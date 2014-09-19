@@ -9,6 +9,7 @@ use Bio::Gonzales::Util qw/flatten/;
 
 use Bio::Gonzales::Matrix::Util qw/uniq_rows/;
 
+
 use 5.010;
 
 use List::Util qw/max/;
@@ -16,11 +17,12 @@ use Bio::Gonzales::Util::File qw/open_on_demand slurpc/;
 
 use base 'Exporter';
 our ( @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
-our $VERSION = '0.0547_01'; # VERSION
+our $VERSION = '0.0548'; # VERSION
 
 @EXPORT      = qw(mslurp mspew lslurp miterate lspew dict_slurp dict_spew);
 %EXPORT_TAGS = ();
 @EXPORT_OK   = qw(lspew xlsx_slurp xlsx_spew);
+my $COMMENT_RE = qr/^\s*#/;
 
 sub dict_slurp {
   my ( $src, $cc ) = @_;
@@ -32,7 +34,7 @@ sub dict_slurp {
     sep              => qr/\t/,
     header           => undef,
     skip             => -1,
-    comment          => qr/^#/,
+    comment          => $COMMENT_RE,
     key_idx          => 0,
     record_filter    => undef,
     commented_header => undef,
@@ -74,6 +76,7 @@ sub dict_slurp {
       $raw_row =~ s/\r\n/\n/;
       chomp $raw_row;
       @header = split /$c{sep}/, $raw_row;
+      @header = ref $vidx ? @header[@$vidx]: ($header[$vidx]) if(defined $vidx && $vidx ne 'all');
       last;
     }
   }
@@ -93,7 +96,8 @@ sub dict_slurp {
 
     for my $kidx (@kidcs) {
 
-      my @k = ( ref $kidx ? map { $_ // '' } @r[@$kidx] : $r[$kidx] );
+      my @k = ( ref $kidx ?  @r[@$kidx] : $r[$kidx] );
+      @k = map { $_ // '' } @k;
       @k = sort @k if ( $c{sort_keys} );
       my $k = join( $;, @k ) // '';
 
@@ -102,10 +106,10 @@ sub dict_slurp {
       } elsif ( not defined $vidx ) {
         $map{$k}++;
       } elsif ($uniq) {
-        $map{$k} = ( ref $vidx ? [ @r[@$vidx] ] : $r[$vidx] );
+        $map{$k} = ( ref $vidx ? [ @r[@$vidx] ] : ($vidx eq 'all' ? \@r : $r[$vidx] ));
       } else {
         $map{$k} //= [];
-        push @{ $map{$k} }, ( ref $vidx ? [ @r[@$vidx] ] : $r[$vidx] );
+        push @{ $map{$k} }, ( ref $vidx ? [ @r[@$vidx] ] : ($vidx eq 'all' ? \@r : $r[$vidx] ));
       }
     }
   }
@@ -144,7 +148,7 @@ sub mslurp {
     header           => 0,
     skip             => -1,
     row_names        => 0,
-    comment          => qr/^#/,
+    comment          => $COMMENT_RE,
     commented_header => undef,
     record_filter    => undef,
     col_idx => undef,
@@ -194,7 +198,7 @@ sub mslurp {
   $fh->close unless ($fh_was_open);
 
   #remove first empty element of a header if same number of elements as first matrix element.
-  shift @header if ( $c{header} && @m > 0 && @{ $m[0] } == @header && !$header[0] );
+  shift @header if ( $c{row_names} && $c{header} && @m > 0 && @{ $m[0] } == @header && !$header[0] );
 
   if (wantarray) {
     return ( \@m, ( @header ? \@header : undef ), ( @row_names ? \@row_names : undef ) );
@@ -211,7 +215,7 @@ sub miterate {
   my %c = (
     sep           => qr/\t/,
     skip          => 0,
-    comment       => qr/^#/,
+    comment          => $COMMENT_RE,
     record_filter => undef,
     %$cc
   );
@@ -241,7 +245,10 @@ sub miterate {
 sub lspew {
   my ( $dest, $l, $c ) = @_;
   my $delim = $c->{sep} // $c->{delim} // "\t";
+  my $header   = $c->{header}    // $c->{ids};
   my ( $fh, $fh_was_open ) = open_on_demand( $dest, '>' );
+
+  say $fh join($delim, @$header) if($header && @$header > 0);
 
   if ( ref $l eq 'HASH' ) {
     while ( my ( $k, $v ) = each %$l ) {
@@ -450,7 +457,7 @@ Provides functions for common matrix/list IO.
     sep     => qr/\t/,
     header  => 0,
     skip    => -1,
-    comment => qr/^#/,
+    comment => qr/^\s*#/,
     key_idx => 0,
     val_idx => undef,
     uniq    => 0,
@@ -543,7 +550,7 @@ Further options with defaults:
         header => 0, # parse header
         skip => 0, # skip the first N lines (without header)
         row_names => 0, # parse row names
-        comment => qr/^#/ # the comment character
+        comment => qr/^\s*#/ # the comment character
         record_filter => undef # set a function to filter records
     );
     

@@ -11,29 +11,29 @@ use Pod::Usage;
 use List::MoreUtils qw/any/;
 use Bio::Gonzales::Util::Text qw/ccount/;
 use Bio::Gonzales::Seq::IO qw/faiterate faspew/;
-use Bio::Perl;
+use Bio::Gonzales::Stat::Util qw/hist_text/;
 my (
-    $is_revcom_seq, $help,      $length,  @id,       $desc,        $seq,
-    $only_id,       $only_head, $verbose, $only_len, $is_inverted, $count,
-    $only_char
+  $is_revcom_seq, $help,    $length,   @id,          $desc,  $seq,       $only_id,
+  $only_head,     $verbose, $only_len, $is_inverted, $count, $only_char, $print_hist
 );
 
 my $shift_id = 0;
 GetOptions(
-    "only_headers|oh" => \$only_head,
-    "filter_length=s" => \$length,
-    "filter_id=s"     => \@id,
-    "filter_seq=s"    => \$seq,
-    "filter_desc=s"   => \$desc,
-    "list_ids|i"      => \$only_id,
-    "list_length|l"   => \$only_len,
-    "list_char|c"     => \$only_char,
-    "help|h|?"        => \$help,
-    "shift_id=i"      => \$shift_id,
-    "verbose|v"       => \$verbose,
-    "revcom"          => \$is_revcom_seq,
-    "invert"          => \$is_inverted,
-    "num_ids|n"       => \$count,
+  "only_headers|oh" => \$only_head,
+  "filter_length=s" => \$length,
+  "filter_id=s"     => \@id,
+  "filter_seq=s"    => \$seq,
+  "filter_desc=s"   => \$desc,
+  "list_ids|i"      => \$only_id,
+  "list_length|l"   => \$only_len,
+  "histogram|hi"    => \$print_hist,
+  "list_char|c"     => \$only_char,
+  "help|h|?"        => \$help,
+  "shift_id=i"      => \$shift_id,
+  "verbose|v"       => \$verbose,
+  "revcom"          => \$is_revcom_seq,
+  "invert"          => \$is_inverted,
+  "num_ids|n"       => \$count,
 ) or pod2usage( -verbose => 2 );
 
 pod2usage( -verbose => 2, -noperldoc => 1 ) if $help;
@@ -41,75 +41,96 @@ pod2usage( -verbose => 2, -noperldoc => 1 ) if $help;
 my @files = @ARGV;
 
 push @files, \*STDIN
-    unless (@files);
+  unless (@files);
+
+if ( $seq && $is_revcom_seq ) {
+  $seq = Bio::Gonzales::Seq->new( seq => $seq, id => '1' )->revcom->seq;
+}
 
 for my $file (@files) {
-    my $seqin;
-    if ( $file && -f $file ) {
-        say STDERR "Using file $file";
-    } elsif ( ref $file ) {
-        say STDERR "Using STDIN";
-    } else {
-        confess "file does not exist: $file";
-    }
+  my $seqin;
+  my @lengths;
+  if ( $file && -f $file ) {
+    say STDERR "Using file $file";
 
-    $seqin = faiterate($file);
+    #special case to speed things up
+    system( qw/grep -c ^>/, $file ) == 0 and next if ($count);
+  } elsif ( ref $file ) {
+    say STDERR "Using STDIN";
+  } else {
+    confess "file does not exist: $file";
+  }
 
-    my $seqout = \*STDOUT;
+  $seqin = faiterate($file);
 
-    if ( $seq && $is_revcom_seq ) {
-        print STDERR $seq;
-        $seq = reverse_complement_as_string($seq);
-        say STDERR " -> $seq";
-    }
+  my $seqout = \*STDOUT;
 
-    @id = map {qr/$_/} @id;
+  @id = map {qr/$_/} @id;
 
-    my $number_of_seqs = 0;
-    while ( my $so = $seqin->() ) {
-        if (
-            ( !$length || eval( $so->length . $length ) )
-            && (
-                   ( @id && any { $so->id =~ /$_/ } @id )
-                || ( $seq  && $so->seq  =~ /$seq/ )
-                || ( $desc && $so->desc =~ /$desc/ )
+  my $number_of_seqs = 0;
+  while ( my $so = $seqin->() ) {
+    if (
+      ( !$length || eval( $so->length . $length ) )
+      && (
+           ( @id && any { $so->id =~ /$_/ } @id )
+        || ( $seq  && $so->seq =~ /$seq/ )
+        || ( $desc && $so->desc =~ /$desc/ )
 
-            )
-            || ( !( @id || $seq || $desc ) && ( $count || $only_id || $only_head || $only_len || $only_char ) )
-            )
-        {
-            say STDERR $so->id . " matches."
-                if ($verbose);
+      )
+      || (
+        !( @id || $seq || $desc )
+        && ( $print_hist
+          || $count
+          || $only_id
+          || $only_head
+          || $only_len
+          || $only_char )
+      )
+      )
+    {
+      say STDERR $so->id . " matches."
+        if ($verbose);
 
-            if ($shift_id) {
-                my $desc;
-                my $id;
-                for ( my $i = 0; $i < $shift_id && $so->desc =~ /(\S+)\s+/g; $i++ ) {
-                    $id   = $1;
-                    $desc = $';
-                }
-                $so->id($id);
-                $so->desc($desc);
-            }
-
-            if ($only_id) {
-                say $so->id;
-            } elsif ($only_head) {
-                say $so->id . " " . $so->desc;
-            } elsif ($only_len) {
-                say $so->length . "\t" . $so->id;
-            } elsif($only_char) {
-                my $char_count = ccount($so->seq);
-                say $so->id . ": " . join(", ", (map { $_ . " => " . $char_count->{$_} } sort keys %$char_count), "sum: " . $so->length);
-            } elsif ($count) {
-                $number_of_seqs++;
-            } else {
-                faspew( $seqout, $so );
-            }
+      if ($shift_id) {
+        my $desc;
+        my $id;
+        for ( my $i = 0; $i < $shift_id && $so->desc =~ /(\S+)\s+/g; $i++ ) {
+          $id   = $1;
+          $desc = $';
         }
-    }
+        $so->id($id);
+        $so->desc($desc);
+      }
 
-    say STDERR $number_of_seqs if ($count);
+      if ($only_id) {
+        say $so->id;
+      } elsif ($only_head) {
+        say $so->id . " " . $so->desc;
+      } elsif ($only_len) {
+        say $so->length . "\t" . $so->id;
+      } elsif ($only_char) {
+        my $char_count = ccount( $so->seq );
+        say $so->id . ": "
+          . join(
+          ", ",
+          (
+            map { $_ . " => " . $char_count->{$_} }
+            sort keys %$char_count
+          ),
+          "sum: " . $so->length
+          );
+      } elsif ($count) {
+        $number_of_seqs++;
+      } elsif ($print_hist) {
+        push @lengths, $so->length;
+      } else {
+        faspew( $seqout, $so );
+      }
+    }
+  }
+
+  say $number_of_seqs if ($count);
+  print hist_text( \@lengths, { skip_empty => 1 } ) if ($print_hist);
 }
 
 __END__

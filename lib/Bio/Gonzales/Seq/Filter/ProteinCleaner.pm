@@ -8,7 +8,7 @@ use strict;
 
 use 5.010;
 
-our $VERSION = '0.0547_01'; # VERSION
+our $VERSION = '0.0548'; # VERSION
 
 has no_desc     => ( is => 'rw', default => 1 );
 has uncommon_aa => ( is => 'rw', default => 1 );

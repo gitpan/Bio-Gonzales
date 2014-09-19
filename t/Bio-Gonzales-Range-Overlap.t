@@ -2,7 +2,12 @@ use warnings;
 use Test::More;
 use Data::Dumper;
 
-BEGIN { use_ok('Bio::Gonzales::Range::Overlap'); }
+BEGIN {
+  eval "use Set::IntervalTree";
+  plan skip_all => "Set::IntervalTree not installed" if $@;
+
+  use_ok('Bio::Gonzales::Range::Overlap');
+}
 
 {
   my $ro = Bio::Gonzales::Range::Overlap->new( ranges => [ [ 1, 5, "eins" ], [ 7, 9, "zwei" ] ] );
@@ -18,8 +23,10 @@ BEGIN { use_ok('Bio::Gonzales::Range::Overlap'); }
   is_deeply( $ro->contained_in( 8, 10 ), [] );
 }
 {
-  my $ro = Bio::Gonzales::Range::Overlap->new( ranges => [ [ 1, 5, "eins" ], [ 7, 9, "zwei" ] ],
-    keep_coords => 0 );
+  my $ro = Bio::Gonzales::Range::Overlap->new(
+    ranges => [ [ 1, 5, "eins" ], [ 7, 9, "zwei" ] ],
+    keep_coords => 0
+  );
 
   is_deeply( $ro->overlaps_with( 4, 6 ), ["eins"] );
   is_deeply( $ro->overlaps_with( 6, 6 ), [] );

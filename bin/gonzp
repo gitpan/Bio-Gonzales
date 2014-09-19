@@ -134,6 +134,10 @@ EOF
   say $av_fh $date;
   $av_fh->close;
 
+  open my $rsync_fh, '>', '.rsync_backup_filter' or confess "Can't open filehandle: $!";
+  say $rsync_fh '- [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]*/';
+  $rsync_fh->close;
+
   say STDERR "Creating IO files dictionary";
   open my $gonzconf_fh, '>', 'gonz.conf.yml' or die "Can't open filehandle: $!";
   say $gonzconf_fh '---';

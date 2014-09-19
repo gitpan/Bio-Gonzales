@@ -7,7 +7,7 @@ use strict;
 
 use 5.010;
 
-our $VERSION = '0.0547_01'; # VERSION
+our $VERSION = '0.0548'; # VERSION
 use Bio::Gonzales::Util qw/flatten/;
 
 with 'Bio::Gonzales::Util::Role::FileIO';

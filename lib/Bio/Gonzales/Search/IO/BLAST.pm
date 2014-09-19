@@ -11,10 +11,11 @@ use Bio::Gonzales::Util::File qw/basename regex_glob is_archive/;
 use List::Util qw/min max/;
 use File::Temp qw/tempdir tempfile/;
 use Bio::Gonzales::Seq::IO qw(faiterate faspew);
+use Capture::Tiny qw/capture_merged/;
 
 use Params::Validate qw/validate/;
 our ( @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
-our $VERSION = '0.0547_01'; # VERSION
+our $VERSION = '0.0548'; # VERSION
 
 @EXPORT      = qw();
 %EXPORT_TAGS = ();
@@ -34,12 +35,13 @@ sub makeblastdb {
     }
   );
 
+  $c{wd} //= './';
   my $unlink;
   my $seqf = $c{seq_file};
   if ( is_archive($seqf) ) {
     say STDERR "$seqf is an archive, extracting first ...";
     my $fait = faiterate($seqf);
-    my ( $fh, $fn ) = tempfile();
+    my ( $fh, $fn ) = tempfile('tempXXXXX', DIR => $c{wd} );
     while ( my $s = $fait->() ) {
       faspew( $fh, $s );
     }
@@ -59,7 +61,6 @@ sub makeblastdb {
   if    ( $c{alphabet} =~ /^(?:a|p)/ )   { push @cmd, '-dbtype', 'prot' }
   elsif ( $c{alphabet} =~ /^(?:n|d|r)/ ) { push @cmd, '-dbtype', 'nucl' }
 
-  $c{wd} //= './';
   $c{db_prefix} //= $basename;
   $c{db_prefix} .= '.bdb';
   my $db_name = File::Spec->catfile( $c{wd}, $c{db_prefix} );
@@ -80,9 +81,11 @@ sub makeblastdb {
 
   say STDERR "Creating blast db:";
   say STDERR join " ", @cmd;
-  local *STDERR;
-  local *STDOUT;
-  system @cmd;
+
+  my $merged = capture_merged { system @cmd };
+
+  say STDERR $merged;
+
 
   unlink $seqf if ($unlink);
   return $db_name;

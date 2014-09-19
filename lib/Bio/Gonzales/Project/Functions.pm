@@ -12,22 +12,24 @@ use Carp;
 
 use base 'Exporter';
 our ( @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
-our $VERSION = '0.0547_01'; # VERSION
+our $VERSION = '0.0548'; # VERSION
 
-@EXPORT      = qw(catfile nfi $ANALYSIS_VERSION path_to analysis_path gonzlog gonzconf iof $GONZLOG);
+@EXPORT      = qw(catfile nfi analysis_version path_to analysis_path gonzlog gonzconf iof $GONZLOG gonzc gonzl);
 %EXPORT_TAGS = ();
 @EXPORT_OK   = qw();
 
 my $bgp = Bio::Gonzales::Project->new();
 
-our $ANALYSIS_VERSION = $bgp->analysis_version;
 our $GONZLOG          = $bgp->log;
 
+sub analysis_version { $bgp->analysis_version(@_) }
 sub path_to       { $bgp->path_to(@_) }
 sub gonzlog       { $bgp->log() }
+sub gonzl         { $bgp->log() }
 sub nfi           { $bgp->nfi(@_) }
 sub iof           { $bgp->conf(@_) }
 sub gonzconf      { $bgp->conf(@_) }
+sub gonzc         { $bgp->conf(@_) }
 sub analysis_path { $bgp->analysis_path(@_) }
 
 1;

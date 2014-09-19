@@ -38,11 +38,14 @@ my ( $opt, $usage ) = describe_options(
   [ 'syn',           'also include synonyms' ],
   [ 'namespace|n=s', 'restrict to certain namespace' ],
   [ 'verbose|v',     "print extra stuff" ],
-  [ 'help',          "print usage message and exit" ],
+  [ 'go_prefix=s', 'set the go prefix (default GO:)', { default => 'GO:' } ],
+  [ 'help',      "print usage message and exit" ],
 );
 
 print( $usage->text ), exit if $opt->help;
 
+my $go_prefix = $opt->go_prefix;
+$go_prefix= qr/^$go_prefix/;
 my $file = shift;
 die "$file is no file" unless ( -f $file );
 
@@ -72,7 +75,7 @@ if ( $opt->all_types ) {
 
 my $relation = $opt->relation;
 for my $t (@terms) {
-  if ( $t->acc !~ /^GO:/ ) {
+  if ( $t->acc !~ /$go_prefix/ ) {
     say STDERR Dumper $t;
     next;
   }
@@ -83,20 +86,20 @@ for my $t (@terms) {
 
   for my $rt ( @{ get_recursive_related_terms_by_types( $graph, $relation, $t->acc, $types ) } ) {
     push @rel_terms, $rt->acc;
-    push @rel_terms, grep {/^GO:/} @{ $rt->alt_id_list } if ( $opt->alt_id );
-    push @rel_terms, grep {/^GO:/} @{ $rt->synonym_list } if ( $opt->syn );
+    push @rel_terms, grep {/$go_prefix/} @{ $rt->alt_id_list } if ( $opt->alt_id );
+    push @rel_terms, grep {/$go_prefix/} @{ $rt->synonym_list } if ( $opt->syn );
   }
 
   @rel_terms = uniq @rel_terms;
 
   $go{ $t->acc } = \@rel_terms;
-  for my $alt_id ( grep {/^GO:/} @{ $t->alt_id_list } ) {
+  for my $alt_id ( grep {/$go_prefix/} @{ $t->alt_id_list } ) {
     # no alternative ids wanted
     last unless ( $opt->alt_id );
     $go{$alt_id} = \@rel_terms;
   }
 
-  for my $syn ( grep {/^GO:/} @{ $t->synonym_list } ) {
+  for my $syn ( grep {/$go_prefix/} @{ $t->synonym_list } ) {
     # no alternative ids wanted
     last unless ( $opt->syn );
     $go{$syn} = \@rel_terms;
