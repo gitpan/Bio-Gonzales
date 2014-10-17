@@ -10,7 +10,7 @@ use POSIX;
 use Data::Dumper;
 
 use 5.010;
-our $VERSION = '0.0548'; # VERSION
+our $VERSION = '0.0549'; # VERSION
 
 # hat gruppen, die wiederum koordinaten haben
 has marks => ( is => 'rw', lazy_build => 1, writer => '_write_marks' );

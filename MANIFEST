@@ -67,7 +67,9 @@ lib/Bio/Gonzales/Feat.pm
 lib/Bio/Gonzales/Feat/IO.pm
 lib/Bio/Gonzales/Feat/IO/BED.pm
 lib/Bio/Gonzales/Feat/IO/Base.pm
+lib/Bio/Gonzales/Feat/IO/CDhit.pm
 lib/Bio/Gonzales/Feat/IO/GFF3.pm
+lib/Bio/Gonzales/Feat/IO/MUM.pm
 lib/Bio/Gonzales/Feat/IO/SWISS.pm
 lib/Bio/Gonzales/GO/Util.pm
 lib/Bio/Gonzales/Graphics/BLAST.pm

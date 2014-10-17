@@ -10,7 +10,7 @@ use Bio::Phylo::IO qw/parse unparse/;
 
 use base 'Exporter';
 our ( @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
-our $VERSION = '0.0548'; # VERSION
+our $VERSION = '0.0549'; # VERSION
 
 @EXPORT      = qw();
 %EXPORT_TAGS = ();

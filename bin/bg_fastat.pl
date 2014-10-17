@@ -43,7 +43,7 @@ for my $file (@files) {
   say "only sequences >= $opt{min_len} taken into account" if($opt{min_len});
   if ( $opt{n} && $opt{n} > 0 ) {
     my $frac = $opt{n};
-    my ( $n, $t ) = nstat( $frac , \@values);
+    my ( $n, $count, $t ) = nstat( $frac , \@values);
 
     say "total sequence length: " . $nfmt_nice->format_number($t);
 

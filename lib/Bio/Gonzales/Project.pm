@@ -23,7 +23,7 @@ use POSIX;
 
 use 5.010;
 
-our $VERSION = '0.0548'; # VERSION
+our $VERSION = '0.0549'; # VERSION
 
 has '_config_key_cache' => ( is => 'rw', default => sub { {} } );
 has '_nfi_cache'        => ( is => 'rw', default => sub { {} } );

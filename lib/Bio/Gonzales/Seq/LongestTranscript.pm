@@ -12,7 +12,7 @@ use Bio::Gonzales::Seq::IO qw/faiterate faspew/;
 use Bio::Gonzales::Feat::IO::GFF3;
 use List::MoreUtils qw/all any none/;
 
-our $VERSION = '0.0548'; # VERSION
+our $VERSION = '0.0549'; # VERSION
 
 has gff_file         => ( is => 'rw', required => 1 );
 has seq_files        => ( is => 'rw', default  => sub { [] } );

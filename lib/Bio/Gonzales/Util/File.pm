@@ -21,8 +21,8 @@ our %ZMODES = (
 
 use base 'Exporter';
 our ( @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
-our $VERSION = '0.0548'; # VERSION
-our $EXTERNAL_GZ = which('gzip'); #which('pigz') // which('gzip');
+our $VERSION = '0.0549'; # VERSION
+our $EXTERNAL_GZ    = which('gzip');    #which('pigz') // which('gzip');
 our $EXTERNAL_BZIP2 = which('bzip2');
 
 @EXPORT      = qw(glob_regex epath bname openod spath);
@@ -108,19 +108,28 @@ sub open_on_demand {
 
   my $fh;
   my $fh_was_open;
+
+  if ( $src && !ref($src) && $src eq '-' ) {
+    if ( $mode eq '<' ) {
+      $src = \*STDIN;
+    } elsif ( $mode eq '>' ) {
+      $src = \*STDOUT;
+    }
+  }
+
   if ( is_fh($src) ) {
     $fh          = $src;
     $fh_was_open = 1;
   } elsif ( !ref($src) ) {
     $src = expand_home($src);
-    if ( $src =~ /.+?\.gz$/i) {
-      if($EXTERNAL_GZ) {
+    if ( $src =~ /.+?\.gz$/i ) {
+      if ($EXTERNAL_GZ) {
         $fh = _pipe_z( $EXTERNAL_GZ, $src, $mode );
       } else {
         $fh = IO::Zlib->new( $src, $ZMODES{$mode} ) or die "IO::Zlib failed\n";
       }
-    } elsif ( $src =~ /.+?\.bz2$/i) {
-      if($EXTERNAL_BZIP2) {
+    } elsif ( $src =~ /.+?\.bz2$/i ) {
+      if ($EXTERNAL_BZIP2) {
         $fh = _pipe_z( $EXTERNAL_BZIP2, $src, $mode );
       } else {
         $fh = IO::Uncompress::Bunzip2->new($src) or die "IO::Uncompress::Bunzip2 failed: $Bunzip2Error\n";
@@ -143,8 +152,8 @@ sub open_on_demand {
 }
 
 sub _pipe_z {
-  my ($gz, $f, $mode ) = @_;
-  return unless( $gz && -x $gz);
+  my ( $gz, $f, $mode ) = @_;
+  return unless ( $gz && -x $gz );
   if ( $mode eq '<' ) {
     open my $fh, '-|', $gz, '-c', '-d', $f or die "Can't open filehandle $f: $!";
     return $fh;
@@ -157,7 +166,7 @@ sub _pipe_z {
     if ($pid) {
       $r->close;
       #return $w;
-      return Bio::Gonzales::Util::IO::Compressed->new($w, $pid);
+      return Bio::Gonzales::Util::IO::Compressed->new( $w, $pid );
     } else {
       open( STDIN, "<&", $r ) || die "can't reopen gz STDIN: $!";
       $w->close || die "can't close gz WRITER: $!";

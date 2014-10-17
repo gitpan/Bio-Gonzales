@@ -13,10 +13,11 @@ use Bio::Gonzales::Feat;
 use Data::Dumper;
 use Carp;
 use Scalar::Util qw/blessed/;
+use Bio::Gonzales::Seq::Util qw/strand_convert/;
 
 extends 'Bio::Gonzales::Feat::IO::Base';
 
-our $VERSION = '0.0548'; # VERSION
+our $VERSION = '0.0549'; # VERSION
 
 our $FASTA_RE         = qr/^\>/;
 our $SEQ_REGION_RE    = qr/^\#\#sequence-region\s+(\S+)\s+(\S+)\s+(\S+)\s*/;
@@ -286,10 +287,7 @@ sub write_collected_feats {
 sub _to_gff3 {
   my ( $feat, $escape_whitespace_everywhere ) = @_;
 
-  my $strand;
-  if    ( $feat->strand < 0 ) { $strand = '-'; }
-  elsif ( $feat->strand > 0 ) { $strand = '+'; }
-  else                        { $strand = '.'; }
+  my $strand = strand_convert($feat->strand);
 
   my $attributes = $feat->attributes;
   #sort the attributes

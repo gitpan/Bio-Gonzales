@@ -8,7 +8,7 @@ use warnings;
 use strict;
 use Carp;
 
-our $VERSION = '0.0548'; # VERSION
+our $VERSION = '0.0549'; # VERSION
 
 #no use yet
 our %alphabets = (

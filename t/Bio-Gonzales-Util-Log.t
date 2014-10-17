@@ -12,7 +12,7 @@ my $stderr = capture_stderr {
 $l->debug("testdebug");
 };
 
-like($stderr, qr/^\[\d{4}-\d\d-\d\d \d\d:\d\d:\d\d\] \[DEBUG\] testdebug$/, "log debug test");
+like($stderr, qr/^\d+ \w+ \d\d:\d\d:\d\d \[DEBUG\]: testdebug$/, "log debug test");
 
 done_testing();
 

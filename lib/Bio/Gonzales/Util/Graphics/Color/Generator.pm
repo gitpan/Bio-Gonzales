@@ -10,7 +10,7 @@ use List::MoreUtils qw/zip/;
 
 use 5.010;
 use SVG;
-our $VERSION = '0.0548'; # VERSION
+our $VERSION = '0.0549'; # VERSION
 
 =head1 NAME
 

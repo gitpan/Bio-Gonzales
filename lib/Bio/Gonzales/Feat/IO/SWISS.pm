@@ -24,7 +24,7 @@ extends 'Bio::Gonzales::Feat::IO::Base';
 #'OSs', 'OGs', 'OCs', 'OXs', 'OHs',
 #'Refs', 'CCs', 'DRs', 'PE', 'KWs', 'FTs', 'Stars', 'SQs');
 
-our $VERSION = '0.0548'; # VERSION
+our $VERSION = '0.0549'; # VERSION
 has check_crc64 => ( is => 'rw' );
 
 sub next_feat {

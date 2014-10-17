@@ -7,7 +7,7 @@ use Carp;
 use Data::Dumper;
 use Bio::Gonzales::Seq::IO;
 
-our $VERSION = '0.0548'; # VERSION
+our $VERSION = '0.0549'; # VERSION
 
 has id     => ( is => 'rw', required   => 1 );
 has desc   => ( is => 'rw', default    => '' );
@@ -92,8 +92,8 @@ sub gapless_seq {
 
 sub rm_gaps {
   my ($self) = @_;
-  
-  $self->seq($self->gapless_seq);
+
+  $self->seq( $self->gapless_seq );
   return $self;
 }
 
@@ -120,13 +120,17 @@ sub ungapped_length {
 
 sub sequence { shift->seq(@_) }
 
-sub all {
+sub stringify {
   my ($self) = @_;
 
   return ">" . $self->id . ( $self->desc ? $self->delim . $self->desc : "" ) . "\n" . $self->seq . "\n";
 }
 
-sub all_formatted {
+sub all { shift->stringify(@_) }
+
+sub all_formatted { shift->stringify_pretty(@_) }
+
+sub stringify_pretty {
   my ($self) = @_;
 
   return
@@ -136,9 +140,9 @@ sub all_formatted {
     . Bio::Gonzales::Seq::IO::format_seq_string( $self->seq );
 }
 
-sub all_pretty { shift->all_formatted(@_) }
+sub all_pretty { shift->stringify_pretty(@_) }
 
-sub pretty { shift->all_formatted(@_) }
+sub pretty { shift->stringify_pretty(@_) }
 
 sub as_primaryseq {
   my ($self) = @_;
@@ -197,6 +201,8 @@ sub revcom {
 sub subseq {
   my ( $self, $range, $c ) = @_;
 
+  $range = [ $range->start, $range->end, $range->strand ]
+    if ( blessed($range) && $range->isa('Bio::Gonzales::Feat') );
   my ( $seq, $corrected_range ) = $self->subseq_as_string( $range, $c );
   my ( $b, $e, $strand, @rest ) = @$corrected_range;
 
@@ -230,7 +236,7 @@ sub subseq_as_string {
   if ( $c->{relaxed_range} ) {
     #if b or e are not defined, just take the beginning and end as given
     #warn "requested invalid subseq range ($b,$e;$strand) from " . $self->id . ", using relaxed boundaries."
-      #unless ( $b && $e );
+    #unless ( $b && $e );
     $b ||= '^';
     $e ||= '$';
   }
@@ -272,39 +278,39 @@ sub subseq_as_string {
         if ( $seq =~ /[^AGCTN]/i );
     }
 
-    $seq = _revcom_from_string($seq, $self->_guess_alphabet);
+    $seq = _revcom_from_string( $seq, $self->_guess_alphabet );
   }
 
   return wantarray ? ( $seq, [ $b, $e, $strand, @rest ] ) : $seq;
 }
 
 sub _revcom_from_string {
-   my ($string, $alphabet) = @_;
+  my ( $string, $alphabet ) = @_;
 
-   # Check that reverse-complementing makes sense
-   if( $alphabet eq 'protein' ) {
-       confess("Sequence is a protein. Cannot revcom.");
-   }
-   if( $alphabet ne 'dna' && $alphabet ne 'rna' ) {
-      carp "Sequence is not dna or rna, but [$alphabet]. Attempting to revcom, ".
-                "but unsure if this is right.";
-   }
+  # Check that reverse-complementing makes sense
+  if ( $alphabet eq 'protein' ) {
+    confess("Sequence is a protein. Cannot revcom.");
+  }
+  if ( $alphabet ne 'dna' && $alphabet ne 'rna' ) {
+    carp "Sequence is not dna or rna, but [$alphabet]. Attempting to revcom, "
+      . "but unsure if this is right.";
+  }
 
-   # If sequence is RNA, map to DNA (then map back later)
-   if( $alphabet eq 'rna' ) {
-       $string =~ tr/uU/tT/;
-   }
+  # If sequence is RNA, map to DNA (then map back later)
+  if ( $alphabet eq 'rna' ) {
+    $string =~ tr/uU/tT/;
+  }
 
-   # Reverse-complement now
-   $string =~ tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/;
-   $string = CORE::reverse $string;
+  # Reverse-complement now
+  $string =~ tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/;
+  $string = CORE::reverse $string;
 
-   # Map back RNA to DNA
-   if( $alphabet eq 'rna' ) {
-       $string =~ tr/tT/uU/;
-   }
+  # Map back RNA to DNA
+  if ( $alphabet eq 'rna' ) {
+    $string =~ tr/tT/uU/;
+  }
 
-   return $string;
+  return $string;
 }
 
 1;

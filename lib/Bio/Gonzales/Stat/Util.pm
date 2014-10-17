@@ -11,7 +11,7 @@ use 5.010;
 
 use base 'Exporter';
 our ( @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
-our $VERSION = '0.0548'; # VERSION
+our $VERSION = '0.0549'; # VERSION
 
 @EXPORT      = qw();
 %EXPORT_TAGS = ();
@@ -124,10 +124,12 @@ sub nstat {
   }
 
   my $sum = 0;
+  my $n = 0;
   for ( sort { $b <=> $a } @$values ) {
     $sum += $_;
+    $n++;
     if ( $sum >= $total * $frac ) {
-      return wantarray ? ( $_, $total ) : $_;
+      return wantarray ? ( $_, $n, $total ) : $_;
     }
   }
   return;

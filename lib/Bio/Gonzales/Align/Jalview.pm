@@ -6,7 +6,7 @@ use Carp;
 
 use Mouse;
 use Bio::Gonzales::Seq;
-our $VERSION = '0.0548'; # VERSION
+our $VERSION = '0.0549'; # VERSION
 
 
 has 'sequence' => (

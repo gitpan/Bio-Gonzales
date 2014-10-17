@@ -12,7 +12,7 @@ use Bio::Gonzales::Util::File;
 
 use Carp;
 
-our $VERSION = '0.0548'; # VERSION
+our $VERSION = '0.0549'; # VERSION
 
 around BUILDARGS => sub {
   my $orig  = shift;

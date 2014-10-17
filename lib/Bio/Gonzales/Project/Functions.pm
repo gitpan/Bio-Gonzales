@@ -12,7 +12,7 @@ use Carp;
 
 use base 'Exporter';
 our ( @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
-our $VERSION = '0.0548'; # VERSION
+our $VERSION = '0.0549'; # VERSION
 
 @EXPORT      = qw(catfile nfi analysis_version path_to analysis_path gonzlog gonzconf iof $GONZLOG gonzc gonzl);
 %EXPORT_TAGS = ();

@@ -15,7 +15,7 @@ use Capture::Tiny qw/capture_merged/;
 
 use Params::Validate qw/validate/;
 our ( @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
-our $VERSION = '0.0548'; # VERSION
+our $VERSION = '0.0549'; # VERSION
 
 @EXPORT      = qw();
 %EXPORT_TAGS = ();

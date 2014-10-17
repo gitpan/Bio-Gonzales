@@ -12,7 +12,7 @@ use strict;
 
 use 5.010;
 
-our $VERSION = '0.0548'; # VERSION
+our $VERSION = '0.0549'; # VERSION
 
 # Supported log level
 my $LEVEL = { debug => 1, info => 2, warn => 3, error => 4, fatal => 5 };
@@ -48,10 +48,13 @@ sub format {
   my ( $self, $level, @lines ) = @_;
 
 
-  my $txt = '[' . strftime("%Y-%m-%d %H:%M:%S", localtime) . "] [" . uc($level) . "]";
-  $txt .= " " . $self->namespace . ":" if ( $self->namespace );
-  $txt .= ' [t' . threads->tid() .']' if($is_thread);
-  $txt .= " " . join( "\n", @lines, '' );
+  my $txt = strftime("%d %b %H:%M:%S", localtime)  . " [" . uc($level) . "]";
+  $txt .= " " . $self->namespace if ( $self->namespace );
+  $txt .= ' (t' . threads->tid()  . ')' if($is_thread);
+  $txt .= ": ";
+  
+  $txt .= join( ("\n" . (" "x length($txt))), @lines );
+  $txt .= "\n";
   return $txt;
 }
 

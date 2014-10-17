@@ -18,7 +18,7 @@ use Bio::SeqIO;
 use Bio::Gonzales::PrimarySeqIX;
 
 use 5.010;
-our $VERSION = '0.0548'; # VERSION
+our $VERSION = '0.0549'; # VERSION
 
 has 'profile_db' => ( is => 'rw', required => 1 );
 has 'result_dir' => ( is => 'rw', required => 1 );
